@@ -192,7 +192,7 @@ class Tasks {
 			Location loc = getLocation();
 			
 			try {
-				Object instance = shadowLoadClass("lombok.delombok.ant.DelombokTaskImpl").newInstance();
+				Object instance = shadowLoadClass("lombok.delombok.ant.DelombokTaskImpl").getDeclaredConstructor().newInstance();
 				for (Field selfField : getClass().getDeclaredFields()) {
 					if (selfField.isSynthetic() || Modifier.isStatic(selfField.getModifiers())) continue;
 					Field otherField = instance.getClass().getDeclaredField(selfField.getName());

@@ -35,7 +35,7 @@ public class AgentLauncher {
 		for (AgentInfo info : AGENTS) {
 			try {
 				Class<?> agentClass = Class.forName(info.className());
-				AgentLaunchable agent = (AgentLaunchable) agentClass.newInstance();
+				AgentLaunchable agent = (AgentLaunchable) agentClass.getDeclaredConstructor().newInstance();
 				agent.runAgent(agentArgs, instrumentation, injected, launchingContext);
 			} catch (Throwable t) {
 				info.problem(t, instrumentation);

@@ -108,7 +108,7 @@ public class SpiLoadUtil {
 					
 					@Override public C next() {
 						try {
-							return target.cast(Class.forName(names.next(), true, fLoader).newInstance());
+							return target.cast(Class.forName(names.next(), true, fLoader).getDeclaredConstructor().newInstance());
 						} catch (Exception e) {
 							if (e instanceof RuntimeException) throw (RuntimeException)e;
 							throw new RuntimeException(e);

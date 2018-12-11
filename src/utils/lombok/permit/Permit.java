@@ -8,6 +8,8 @@ import java.lang.reflect.Method;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.util.List;
 
+import sun.misc.Unsafe;
+
 // sunapi suppresses javac's warning about using Unsafe; 'all' suppresses eclipse's warning about the unspecified 'sunapi' key. Leave them both.
 // Yes, javac's definition of the word 'all' is quite contrary to what the dictionary says it means. 'all' does NOT include 'sunapi' according to javac.
 @SuppressWarnings({"sunapi", "all"})
@@ -17,7 +19,7 @@ public class Permit {
 	
 	private static final long ACCESSIBLE_OVERRIDE_FIELD_OFFSET;
 	private static final IllegalAccessException INIT_ERROR;
-	private static final sun.misc.Unsafe UNSAFE = (sun.misc.Unsafe) reflectiveStaticFieldAccess(sun.misc.Unsafe.class, "theUnsafe");
+	private static final Unsafe UNSAFE = (sun.misc.Unsafe) reflectiveStaticFieldAccess(sun.misc.Unsafe.class, "theUnsafe");
 	
 	static {
 		Field f;
