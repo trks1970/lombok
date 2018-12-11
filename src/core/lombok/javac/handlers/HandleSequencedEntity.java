@@ -24,6 +24,7 @@ import lombok.experimental.SequencedEntity;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
+import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 
 /**
  * Handles the {@code lombok.experimental.SequencedEntity} annotation for javac.
@@ -44,6 +45,16 @@ public class HandleSequencedEntity extends JavacAnnotationHandler<SequencedEntit
 		addAnnotation( typeDecl, typeNode, "javax.persistence.Entity" );
 		// add field private Long <id>
 		String idFieldName = annotation.getInstance().id();
+		String versionFieldName = annotation.getInstance().version();
+		if (fieldExists(idFieldName, typeNode) != MemberExistsResult.NOT_EXISTS) {
+			annotationNode.addWarning("Field '" + idFieldName + "' already exists.");
+			return;
+		}
+		if (fieldExists(versionFieldName, typeNode) != MemberExistsResult.NOT_EXISTS) {
+			annotationNode.addWarning("Field '" + versionFieldName + "' already exists.");
+			return;
+		}
+
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		JCExpression  longExpr = genJavaLangTypeRef(typeNode, "Long");
 		JCVariableDecl idFieldDecl = recursiveSetGeneratedBy(maker.VarDef(
@@ -64,7 +75,7 @@ public class HandleSequencedEntity extends JavacAnnotationHandler<SequencedEntit
 		addColumnAnnotation(idFieldDecl, typeNode, idFieldName);
 		
 		// add field private Integer <version>
-		String versionFieldName = annotation.getInstance().version();
+		
 		JCExpression  integerExpr = genJavaLangTypeRef(typeNode, "Integer");
 		JCVariableDecl versionFieldDecl = recursiveSetGeneratedBy(maker.VarDef(
 				maker.Modifiers( Flags.PRIVATE ),
