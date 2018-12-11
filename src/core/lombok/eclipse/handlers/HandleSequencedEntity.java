@@ -1,7 +1,9 @@
 package lombok.eclipse.handlers;
 
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -13,6 +15,7 @@ import org.eclipse.jdt.internal.compiler.ast.NormalAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.mangosdk.spi.ProviderFor;
 
@@ -45,14 +48,20 @@ public class HandleSequencedEntity extends EclipseAnnotationHandler<SequencedEnt
 			annotationNode.addWarning("Field '" + versionFieldName + "' already exists.");
 			return;
 		}
-
+		// add field private Long <id>
 		FieldDeclaration idFieldDecl = new FieldDeclaration(idFieldName.toCharArray(), 0, -1);
 		setGeneratedBy(idFieldDecl, ast);
 		idFieldDecl.declarationSourceEnd = -1;
 		idFieldDecl.modifiers = Modifier.PRIVATE;
 		idFieldDecl.type = createTypeReference("java.lang.Long", ast);
 		injectField(typeNode, idFieldDecl);
+		// add @javax.persistence.Id to field
 		addAnnotation( idFieldDecl, "javax.persistence.Id" );
+		
+		// add @javax.persistence.SequenceGenerator(name = "<typeName>Gen",sequenceName = "seq_<typeName>")
+		String typeName = typeNode.getName().toLowerCase();
+		addSequenceAnnotation(idFieldDecl, typeName );
+
 
 	}
 	
@@ -66,7 +75,17 @@ public class HandleSequencedEntity extends EclipseAnnotationHandler<SequencedEnt
 		addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName(annotation), null );
 	}
 
-	private static Annotation[] addAnnotation( ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn, ASTNode arg )
+	private void addSequenceAnnotation( FieldDeclaration fieldDecl, String typeName )
+	{
+		MemberValuePair name = new MemberValuePair( "name".toCharArray(), 0, 0, new StringLiteral( (typeName + "Gen").toCharArray(), 0,0,0 ) );
+		MemberValuePair sequenceName = new MemberValuePair( "sequenceName".toCharArray(), 0, 0, new StringLiteral( ("seq_"+ typeName).toCharArray(), 0,0,0 ) );
+		List<MemberValuePair> argList = new ArrayList<>();
+		argList.add( name );
+		argList.add( sequenceName );
+		addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName("javax.persistence.SequenceGenerator"), null );
+	}
+
+	private static Annotation[] addAnnotation( ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn, List<ASTNode> argList )
 	{
 		char[] simpleName = annotationTypeFqn[annotationTypeFqn.length - 1];
 
@@ -94,29 +113,53 @@ public class HandleSequencedEntity extends EclipseAnnotationHandler<SequencedEnt
 		Arrays.fill( poss, p );
 		QualifiedTypeReference qualifiedType = new QualifiedTypeReference( annotationTypeFqn, poss );
 		setGeneratedBy( qualifiedType, source );
-		Annotation ann;
-		if( arg instanceof Expression )
+		Annotation ann = null;
+		if( argList != null )
 		{
-			SingleMemberAnnotation sma = new SingleMemberAnnotation( qualifiedType, pS );
-			sma.declarationSourceEnd = pE;
-			arg.sourceStart = pS;
-			arg.sourceEnd = pE;
-			sma.memberValue = (Expression) arg;
-			setGeneratedBy( sma.memberValue, source );
-			ann = sma;
-		}
-		else if( arg instanceof MemberValuePair )
-		{
-			NormalAnnotation na = new NormalAnnotation( qualifiedType, pS );
-			na.declarationSourceEnd = pE;
-			arg.sourceStart = pS;
-			arg.sourceEnd = pE;
-			na.memberValuePairs = new MemberValuePair[] { (MemberValuePair) arg };
-			setGeneratedBy( na.memberValuePairs[0], source );
-			setGeneratedBy( na.memberValuePairs[0].value, source );
-			na.memberValuePairs[0].value.sourceStart = pS;
-			na.memberValuePairs[0].value.sourceEnd = pE;
-			ann = na;
+			if( argList.size() == 1 )
+			{
+				ASTNode arg = argList.get( 0 );
+				if( arg instanceof Expression )
+				{
+					SingleMemberAnnotation sma = new SingleMemberAnnotation( qualifiedType, pS );
+					sma.declarationSourceEnd = pE;
+					arg.sourceStart = pS;
+					arg.sourceEnd = pE;
+					sma.memberValue = (Expression) arg;
+					setGeneratedBy( sma.memberValue, source );
+					ann = sma;
+				}
+				else if( arg instanceof MemberValuePair )
+				{
+					NormalAnnotation na = new NormalAnnotation( qualifiedType, pS );
+					na.declarationSourceEnd = pE;
+					arg.sourceStart = pS;
+					arg.sourceEnd = pE;
+					na.memberValuePairs = new MemberValuePair[] { (MemberValuePair) arg };
+					setGeneratedBy( na.memberValuePairs[0], source );
+					setGeneratedBy( na.memberValuePairs[0].value, source );
+					na.memberValuePairs[0].value.sourceStart = pS;
+					na.memberValuePairs[0].value.sourceEnd = pE;
+					ann = na;
+				}
+			}
+			else
+			{
+				NormalAnnotation na = new NormalAnnotation( qualifiedType, pS );
+				na.declarationSourceEnd = pE;
+				for( ASTNode arg : argList )
+				{
+					arg.sourceStart = pS;
+					arg.sourceEnd = pE;
+				}
+				na.memberValuePairs = argList.toArray( new MemberValuePair[argList.size()] );
+				for( int i = 0; i < na.memberValuePairs.length; i++ )
+				{
+					na.memberValuePairs[i].value.sourceStart = pS;
+					na.memberValuePairs[i].value.sourceEnd = pE;
+				}
+				ann = na;
+			}
 		}
 		else
 		{

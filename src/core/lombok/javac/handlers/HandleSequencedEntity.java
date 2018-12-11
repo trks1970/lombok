@@ -64,11 +64,9 @@ public class HandleSequencedEntity extends JavacAnnotationHandler<SequencedEntit
 		
 		// add @javax.persistence.Id to field
 		addAnnotation(idFieldDecl, typeNode, "javax.persistence.Id");
-		
 		// add @javax.persistence.SequenceGenerator(name = "<typeName>Gen",sequenceName = "seq_<typeName>")
 		String typeName = typeNode.getName().toLowerCase();
-		addSequenceAnnotation(idFieldDecl, typeNode, typeName );
-		
+		addSequenceAnnotation(idFieldDecl, typeNode, typeName );	
 		// add @javax.persistence.GeneratedValue(strategy = javax.persistence.GenerationType.AUTO, generator = "<typeName>Gen")
 		addGeneratedValueAnnotation(idFieldDecl, typeNode, typeName );
 		// add @javax.persistence.Column(name = "<id>")
@@ -145,53 +143,6 @@ public class HandleSequencedEntity extends JavacAnnotationHandler<SequencedEntit
 		addAnnotation( fieldDecl.mods, node, fieldDecl.pos, JavacHandlerUtil.getGeneratedBy(fieldDecl), node.getContext(), "javax.persistence.Column", 
 				argList );
 	}
-
-	/*private void addAnnotation( JCModifiers mods, JavacNode node, int pos, JCTree source, Context context, String annotationTypeFqn, JCExpression arg )
-	{
-		boolean isJavaLangBased;
-		String simpleName;
-		{
-			int idx = annotationTypeFqn.lastIndexOf( '.' );
-			simpleName = idx == -1 ? annotationTypeFqn : annotationTypeFqn.substring( idx + 1 );
-
-			isJavaLangBased = idx == 9 && annotationTypeFqn.regionMatches( 0, "java.lang.", 0, 10 );
-		}
-
-		for( JCAnnotation ann : mods.annotations )
-		{
-			JCTree annType = ann.getAnnotationType();
-			if( annType instanceof JCIdent )
-			{
-				Name lastPart = ( (JCIdent) annType ).name;
-				if( lastPart.contentEquals( simpleName ) )
-					return;
-			}
-
-			if( annType instanceof JCFieldAccess )
-			{
-				if( annType.toString().equals( annotationTypeFqn ) )
-					return;
-			}
-		}
-
-		JavacTreeMaker maker = node.getTreeMaker();
-		JCExpression annType = isJavaLangBased ? JavacHandlerUtil.genJavaLangTypeRef( node, simpleName )
-				: JavacHandlerUtil.chainDotsString( node, annotationTypeFqn );
-		annType.pos = pos;
-		if( arg != null )
-		{
-			arg.pos = pos;
-			if( arg instanceof JCAssign )
-			{
-				( (JCAssign) arg ).lhs.pos = pos;
-				( (JCAssign) arg ).rhs.pos = pos;
-			}
-		}
-		List<JCExpression> argList = arg != null ? List.of( arg ) : List.<JCExpression> nil();
-		JCAnnotation annotation = JavacHandlerUtil.recursiveSetGeneratedBy( maker.Annotation( annType, argList ), source, context );
-		annotation.pos = pos;
-		mods.annotations = mods.annotations.append( annotation );
-	}*/
 
 	private void addAnnotation( JCModifiers mods, JavacNode node, int pos, JCTree source, Context context, String annotationTypeFqn, List<JCExpression> argList )
 	{
