@@ -43,7 +43,6 @@ public class HandleSequencedEntity extends JavacAnnotationHandler<SequencedEntit
 		JavacNode typeNode = annotationNode.up();
 		JCClassDecl typeDecl = (JCClassDecl) typeNode.get();
 		addAnnotation( typeDecl, typeNode, "javax.persistence.Entity" );
-		// add field private Long <id>
 		String idFieldName = annotation.getInstance().id();
 		String versionFieldName = annotation.getInstance().version();
 		if (fieldExists(idFieldName, typeNode) != MemberExistsResult.NOT_EXISTS) {
@@ -54,14 +53,14 @@ public class HandleSequencedEntity extends JavacAnnotationHandler<SequencedEntit
 			annotationNode.addWarning("Field '" + versionFieldName + "' already exists.");
 			return;
 		}
-
 		JavacTreeMaker maker = typeNode.getTreeMaker();
+		
+		// add field private Long <id>
 		JCExpression  longExpr = genJavaLangTypeRef(typeNode, "Long");
 		JCVariableDecl idFieldDecl = recursiveSetGeneratedBy(maker.VarDef(
 				maker.Modifiers( Flags.PRIVATE ),
 				typeNode.toName( idFieldName ), longExpr, null), annotationNode.get(), typeNode.getContext());
 		JavacNode idNode = injectFieldAndMarkGenerated(typeNode, idFieldDecl);
-		
 		// add @javax.persistence.Id to field
 		addAnnotation(idFieldDecl, typeNode, "javax.persistence.Id");
 		// add @javax.persistence.SequenceGenerator(name = "<typeName>Gen",sequenceName = "seq_<typeName>")
@@ -73,13 +72,11 @@ public class HandleSequencedEntity extends JavacAnnotationHandler<SequencedEntit
 		addColumnAnnotation(idFieldDecl, typeNode, idFieldName);
 		
 		// add field private Integer <version>
-		
 		JCExpression  integerExpr = genJavaLangTypeRef(typeNode, "Integer");
 		JCVariableDecl versionFieldDecl = recursiveSetGeneratedBy(maker.VarDef(
 				maker.Modifiers( Flags.PRIVATE ),
 				typeNode.toName( versionFieldName ), integerExpr, null), annotationNode.get(), typeNode.getContext());
 		JavacNode versionNode = injectFieldAndMarkGenerated(typeNode, versionFieldDecl);
-		
 		// add @javax.persistence.Version
 		addAnnotation( versionFieldDecl, typeNode, "javax.persistence.Version" );
 		// add @javax.persistence.Column(name = "<version>")

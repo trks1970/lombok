@@ -19,9 +19,11 @@ import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.mangosdk.spi.ProviderFor;
 
+
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import static lombok.eclipse.handlers.HandleLog.createTypeReference;
 
+import lombok.AccessLevel;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
@@ -32,6 +34,9 @@ import lombok.experimental.SequencedEntity;
 @ProviderFor( EclipseAnnotationHandler.class )
 public class HandleSequencedEntity extends EclipseAnnotationHandler<SequencedEntity>
 {
+	private HandleGetter getterHandler = new HandleGetter();
+	private HandleSetter setterHandler = new HandleSetter();
+	
 	@Override
 	public void handle( AnnotationValues<SequencedEntity> annotation, Annotation ast, EclipseNode annotationNode )
 	{
@@ -54,13 +59,33 @@ public class HandleSequencedEntity extends EclipseAnnotationHandler<SequencedEnt
 		idFieldDecl.declarationSourceEnd = -1;
 		idFieldDecl.modifiers = Modifier.PRIVATE;
 		idFieldDecl.type = createTypeReference("java.lang.Long", ast);
-		injectField(typeNode, idFieldDecl);
+		EclipseNode idNode = injectField(typeNode, idFieldDecl);
 		// add @javax.persistence.Id to field
 		addAnnotation( idFieldDecl, "javax.persistence.Id" );
-		
 		// add @javax.persistence.SequenceGenerator(name = "<typeName>Gen",sequenceName = "seq_<typeName>")
 		String typeName = typeNode.getName().toLowerCase();
 		addSequenceAnnotation(idFieldDecl, typeName );
+		// add @javax.persistence.GeneratedValue(strategy = javax.persistence.GenerationType.AUTO, generator = "<typeName>Gen")
+		addGeneratedValueAnnotation(idFieldDecl, typeName );
+		// add @javax.persistence.Column(name = "<id>")
+		addColumnAnnotation(idFieldDecl, idFieldName);
+		
+		// add field private Integer <version>
+		FieldDeclaration versionFieldDecl = new FieldDeclaration(versionFieldName.toCharArray(), 0, -1);
+		setGeneratedBy(versionFieldDecl, ast);
+		versionFieldDecl.declarationSourceEnd = -1;
+		versionFieldDecl.modifiers = Modifier.PRIVATE;
+		versionFieldDecl.type = createTypeReference("java.lang.Integer", ast);
+		EclipseNode versionNode = injectField(typeNode, versionFieldDecl);
+		// add @javax.persistence.Version
+		addAnnotation( versionFieldDecl, "javax.persistence.Version" );
+		// add @javax.persistence.Column(name = "<version>")
+		addColumnAnnotation( versionFieldDecl, versionFieldName);
+		
+		getterHandler.createGetterForField( AccessLevel.PRIVATE, idNode, typeNode, typeNode.get(), true, false, new ArrayList<Annotation>() );
+		setterHandler.createSetterForField( AccessLevel.PRIVATE, idNode, typeNode, true, new ArrayList<Annotation>(), new ArrayList<Annotation>() );
+		getterHandler.createGetterForField( AccessLevel.PRIVATE, versionNode, typeNode, typeNode.get(), true, false, new ArrayList<Annotation>() );
+		setterHandler.createSetterForField( AccessLevel.PRIVATE, versionNode, typeNode, true, new ArrayList<Annotation>(), new ArrayList<Annotation>() );
 
 
 	}
@@ -84,6 +109,26 @@ public class HandleSequencedEntity extends EclipseAnnotationHandler<SequencedEnt
 		argList.add( sequenceName );
 		addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName("javax.persistence.SequenceGenerator"), null );
 	}
+	
+	private void addGeneratedValueAnnotation( FieldDeclaration fieldDecl, String typeName )
+	{
+		MemberValuePair strategy = new MemberValuePair( "startegy".toCharArray(), 0, 0, new StringLiteral( ("javax.persistence.GenerationType.AUTO").toCharArray(), 0,0,0 ) );
+		MemberValuePair generator = new MemberValuePair( "generator".toCharArray(), 0, 0, new StringLiteral( (typeName + "Gen").toCharArray(), 0,0,0 ) );
+		List<MemberValuePair> argList = new ArrayList<>();
+		argList.add( strategy );
+		argList.add( generator );
+		addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName("javax.persistence.GeneratedValue"), null );	
+	}
+	
+	private void addColumnAnnotation( FieldDeclaration fieldDecl, String columnName )
+	{
+		MemberValuePair name = new MemberValuePair( "name".toCharArray(), 0, 0, new StringLiteral( (columnName).toCharArray(), 0,0,0 ) );
+		List<MemberValuePair> argList = new ArrayList<>();
+		argList.add( name );
+		addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName("javax.persistence.Column"), null );	
+	}
+
+
 
 	private static Annotation[] addAnnotation( ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn, List<ASTNode> argList )
 	{
