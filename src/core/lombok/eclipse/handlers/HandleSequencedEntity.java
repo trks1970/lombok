@@ -29,16 +29,16 @@ import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
-import lombok.experimental.SequencedEntity;
+import lombok.experimental.jpa.LombokJpaEntity;
 
 @ProviderFor( EclipseAnnotationHandler.class )
-public class HandleSequencedEntity extends EclipseAnnotationHandler<SequencedEntity>
+public class HandleSequencedEntity extends EclipseAnnotationHandler<LombokJpaEntity>
 {
 	private HandleGetter getterHandler = new HandleGetter();
 	private HandleSetter setterHandler = new HandleSetter();
 	
 	@Override
-	public void handle( AnnotationValues<SequencedEntity> annotation, Annotation ast, EclipseNode annotationNode )
+	public void handle( AnnotationValues<LombokJpaEntity> annotation, Annotation ast, EclipseNode annotationNode )
 	{
 		EclipseNode typeNode = annotationNode.up();
 		TypeDeclaration typeDecl = (TypeDeclaration) typeNode.get();
@@ -104,7 +104,7 @@ public class HandleSequencedEntity extends EclipseAnnotationHandler<SequencedEnt
 	{
 		MemberValuePair name = new MemberValuePair( "name".toCharArray(), 0, 0, new StringLiteral( (typeName + "Gen").toCharArray(), 0,0,0 ) );
 		MemberValuePair sequenceName = new MemberValuePair( "sequenceName".toCharArray(), 0, 0, new StringLiteral( ("seq_"+ typeName).toCharArray(), 0,0,0 ) );
-		List<MemberValuePair> argList = new ArrayList<>();
+		List<MemberValuePair> argList = new ArrayList<MemberValuePair>();
 		argList.add( name );
 		argList.add( sequenceName );
 		addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName("javax.persistence.SequenceGenerator"), null );
@@ -114,7 +114,7 @@ public class HandleSequencedEntity extends EclipseAnnotationHandler<SequencedEnt
 	{
 		MemberValuePair strategy = new MemberValuePair( "startegy".toCharArray(), 0, 0, new StringLiteral( ("javax.persistence.GenerationType.AUTO").toCharArray(), 0,0,0 ) );
 		MemberValuePair generator = new MemberValuePair( "generator".toCharArray(), 0, 0, new StringLiteral( (typeName + "Gen").toCharArray(), 0,0,0 ) );
-		List<MemberValuePair> argList = new ArrayList<>();
+		List<MemberValuePair> argList = new ArrayList<MemberValuePair>();
 		argList.add( strategy );
 		argList.add( generator );
 		addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName("javax.persistence.GeneratedValue"), null );	
@@ -123,7 +123,7 @@ public class HandleSequencedEntity extends EclipseAnnotationHandler<SequencedEnt
 	private void addColumnAnnotation( FieldDeclaration fieldDecl, String columnName )
 	{
 		MemberValuePair name = new MemberValuePair( "name".toCharArray(), 0, 0, new StringLiteral( (columnName).toCharArray(), 0,0,0 ) );
-		List<MemberValuePair> argList = new ArrayList<>();
+		List<MemberValuePair> argList = new ArrayList<MemberValuePair>();
 		argList.add( name );
 		addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName("javax.persistence.Column"), null );	
 	}

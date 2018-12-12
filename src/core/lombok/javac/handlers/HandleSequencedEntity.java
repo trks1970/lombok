@@ -20,7 +20,7 @@ import com.sun.tools.javac.util.Name;
 
 import lombok.AccessLevel;
 import lombok.core.AnnotationValues;
-import lombok.experimental.SequencedEntity;
+import lombok.experimental.jpa.LombokJpaEntity;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -30,15 +30,15 @@ import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
  * Handles the {@code lombok.experimental.SequencedEntity} annotation for javac.
  */
 @ProviderFor( JavacAnnotationHandler.class )
-public class HandleSequencedEntity extends JavacAnnotationHandler<SequencedEntity>
+public class HandleSequencedEntity extends JavacAnnotationHandler<LombokJpaEntity>
 {
 	private HandleGetter getterHandler = new HandleGetter();
 	private HandleSetter setterHandler = new HandleSetter();
 	
 	@Override
-	public void handle( AnnotationValues<SequencedEntity> annotation, JCAnnotation ast, JavacNode annotationNode )
+	public void handle( AnnotationValues<LombokJpaEntity> annotation, JCAnnotation ast, JavacNode annotationNode )
 	{
-		deleteAnnotationIfNeccessary(annotationNode, SequencedEntity.class);
+		deleteAnnotationIfNeccessary(annotationNode, LombokJpaEntity.class);
 		// add @javax.persistence.Entity on type
 		JavacNode typeNode = annotationNode.up();
 		JCClassDecl typeDecl = (JCClassDecl) typeNode.get();
