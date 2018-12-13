@@ -24,41 +24,41 @@ import lombok.eclipse.Eclipse;
 
 public class AnnotationGenerator
 {
-	public static Annotation[] addAnnotation( TypeDeclaration typeDecl, String annotation )
+	public  Annotation[] addAnnotation( TypeDeclaration typeDecl, String annotation )
 	{
 		return addAnnotation( typeDecl, typeDecl.annotations, Eclipse.fromQualifiedName(annotation), null );
 	}
 
-	public static Annotation[] addAnnotation( TypeDeclaration typeDecl, String annotation, ASTNode arg )
+	public  Annotation[] addAnnotation( TypeDeclaration typeDecl, String annotation, ASTNode arg )
 	{
 		List<ASTNode> argList = new ArrayList<ASTNode>();
 		argList.add(  arg );
 		return addAnnotation( typeDecl, typeDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
 	}
 
-	public static Annotation[] addAnnotation( TypeDeclaration typeDecl, String annotation, List<ASTNode> argList )
+	public  Annotation[] addAnnotation( TypeDeclaration typeDecl, String annotation, List<ASTNode> argList )
 	{
 		return addAnnotation( typeDecl, typeDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
 	}
 	
-	public static Annotation[] addAnnotation( FieldDeclaration fieldDecl, String annotation )
+	public  Annotation[] addAnnotation( FieldDeclaration fieldDecl, String annotation )
 	{
 		return addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName(annotation), null );
 	}
 
-	public static Annotation[] addAnnotation( FieldDeclaration fieldDecl, String annotation, ASTNode arg )
+	public  Annotation[] addAnnotation( FieldDeclaration fieldDecl, String annotation, ASTNode arg )
 	{
 		List<ASTNode> argList = new ArrayList<ASTNode>();
 		argList.add(  arg );
 		return addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
 	}
 
-	public static Annotation[] addAnnotation( FieldDeclaration fieldDecl, String annotation, List<ASTNode> argList )
+	public  Annotation[] addAnnotation( FieldDeclaration fieldDecl, String annotation, List<ASTNode> argList )
 	{
 		return addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
 	}
 	
-	public static Annotation[] injectAnnotation( ASTNode node, Annotation ann )
+	public  Annotation[] injectAnnotation( ASTNode node, Annotation ann )
 	{
 		
 		Annotation[] originalAnnotationArray = null;
@@ -100,7 +100,7 @@ public class AnnotationGenerator
 		return newAnnotationArray;
 	}
 	
-	public static Annotation createAnnotation(ASTNode source, String annotationFQN, List<ASTNode> argList )
+	public  Annotation createAnnotation(ASTNode source, String annotationFQN, List<ASTNode> argList )
 	{
 		int pS = source.sourceStart;
 		int pE = source.sourceEnd;
@@ -169,7 +169,7 @@ public class AnnotationGenerator
 		return ann;
 	}
 	
-	private static Annotation[] addAnnotation( ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn, List<ASTNode> argList )
+	private  Annotation[] addAnnotation( ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn, List<ASTNode> argList )
 	{
 		Annotation annotation = createAnnotation(source, Eclipse.toQualifiedName(annotationTypeFqn), argList);
 		return injectAnnotation( source, annotation );
@@ -264,7 +264,7 @@ public class AnnotationGenerator
 		*/
 	}
 	
-	private static Annotation[] annotationExists(Annotation[] originalAnnotationArray, char[][] annotationTypeFqn )
+	private  Annotation[] annotationExists(Annotation[] originalAnnotationArray, char[][] annotationTypeFqn )
 	{
 		Annotation[]  annotations = null;
 		if( originalAnnotationArray != null )

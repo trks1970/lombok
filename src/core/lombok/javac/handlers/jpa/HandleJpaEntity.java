@@ -98,13 +98,13 @@ public class HandleJpaEntity extends JavacAnnotationHandler<LombokJpaEntity>
 				JCAnnotation index = typeNode.getTreeMaker().Annotation( JavacHandlerUtil.chainDotsString( typeNode, "javax.persistence.Index" ), indexArgs );
 				indexes = indexes.append( index );
 			}
+			JavacTreeMaker maker = typeNode.getTreeMaker();
+			List<JCExpression> dims = List.<JCExpression> nil();
+			dims = dims.append( maker.Literal( new Integer( indexes.size() ) ) );
+			JCNewArray array = maker.NewArray( null, null, indexes );
+			JCExpression parameter = maker.Assign( maker.Ident(typeNode.toName( "indexes" )), array );
+			tableArgs = tableArgs.append( parameter );
 		}
-		JavacTreeMaker maker = typeNode.getTreeMaker();
-		List<JCExpression> dims = List.<JCExpression> nil();
-		dims = dims.append( maker.Literal( new Integer( indexes.size() ) ) );
-		JCNewArray array = maker.NewArray( null, null, indexes );
-		JCExpression parameter = maker.Assign( maker.Ident(typeNode.toName( "indexes" )), array );
-		tableArgs = tableArgs.append( parameter );
 		if( 0 < tableArgs.size() )
 		{
 			addAnnotation( typeDecl, typeNode, "javax.persistence.Table", tableArgs );

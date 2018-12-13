@@ -8,15 +8,9 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
-import lombok.experimental.jpa.Idx;
-import lombok.experimental.jpa.LombokJpaEntity;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 
-@LombokJpaEntity(indexes = {
-	@Idx(name="test1",unique=true,columns="id, version"),
-	@Idx(name="test2",columns="id, text")
-})
 public class FieldGenerator
 {
 	public static JCVariableDecl createField( int modifier, String fieldName, String fieldType, JCAnnotation source, JavacNode annotationNode )
