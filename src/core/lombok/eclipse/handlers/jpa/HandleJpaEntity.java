@@ -13,6 +13,7 @@ import org.mangosdk.spi.ProviderFor;
 
 import static lombok.eclipse.handlers.EclipseHandlerUtil.injectField;
 import static lombok.eclipse.handlers.generators.AnnotationGenerator.addAnnotation;
+import static lombok.eclipse.handlers.generators.AnnotationGenerator.createAnnotation;
 import static lombok.eclipse.handlers.generators.FieldGenerator.createField;
 import static lombok.eclipse.handlers.generators.MemberValuePairGenerator.createMemberValuePair;
 
@@ -67,11 +68,11 @@ public class HandleJpaEntity extends EclipseAnnotationHandler<LombokJpaEntity>
 					indexArgs = createMemberValuePair( "name", a.indexes()[i].name(), indexArgs );
 				}
 				indexArgs = createMemberValuePair( "columns", a.indexes()[i].columns(), indexArgs );
-				if( !a.indexes()[i].unique().isEmpty() )
+				if( a.indexes()[i].unique() )
 				{
 					indexArgs = createMemberValuePair( "unique", a.indexes()[i].unique(), indexArgs );
 				}
-				Annotation
+				indexes.add( createAnnotation(ast, "javax.persistence.Index", indexArgs) );
 			}
 		}
 
@@ -95,15 +96,18 @@ public class HandleJpaEntity extends EclipseAnnotationHandler<LombokJpaEntity>
 		return versionNode;
 	}
 
-	private EclipseNode addIDField( Annotation ast, EclipseNode annotationNode, EclipseNode typeNode, LombokJpaEntity a )
+	private EclipseNode addIDField( Annotation source, EclipseNode annotationNode, EclipseNode typeNode, LombokJpaEntity a )
 	{
-		FieldDeclaration idFieldDecl = createField( Modifier.PRIVATE, a.idField(), a.idType().type(), ast, annotationNode );
+		FieldDeclaration idFieldDecl = createField( Modifier.PRIVATE, a.idField(), a.idType().type(), source, annotationNode );
 		EclipseNode idNode = injectField(typeNode, idFieldDecl);
 		// add @javax.persistence.Id to field
 		addAnnotation( idFieldDecl, "javax.persistence.Id" );
-		// add @javax.persistence.Column(name = "<id>")
-		addAnnotation( idFieldDecl, "javax.persistence.Column", createMemberValuePair( "name", a.idColumn() ) );
-		if( a.idSequence().isEmpty() || GenerationType.SEQUENCE.equals( a.idGeneration() ) )
+		if( !a.idColumn().isEmpty() )
+		{
+			// add @javax.persistence.Column(name = "<id>")
+			addAnnotation( idFieldDecl, "javax.persistence.Column", createMemberValuePair( "name", a.idColumn() ) );
+		}
+		if( !a.idSequence().isEmpty() || GenerationType.SEQUENCE.equals( a.idGeneration() ) )
 		{	
 			String sequenceName = a.idSequence();
 			if( sequenceName.isEmpty() )

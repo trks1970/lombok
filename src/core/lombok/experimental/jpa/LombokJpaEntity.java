@@ -6,19 +6,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * <li>idColumn defaults to "id"</li>
- * <li>idField defaults to "id" </li>
- * <li>idType defaults to {@code java.lang.Long}</li>
- * <li>idGeneration defaults to "AUTO"</li>
- * <li>idSequence if idGeneration is SEQUENCE and not specified, then "seq_" + name of annotated class in lowercase</li>
+ * <li>idColumn (Optional) DB column of PK</li>
+ * <li>idField (Optional) defaults to "id" </li>
+ * <li>idType (Optional) defaults to {@code java.lang.Long}</li>
+ * <li>idGeneration (Optional) defaults to "AUTO"</li>
+ * <li>idSequence (Optional) sequence to use for ID generation. If idGeneration is SEQUENCE and not specified, then "seq_" + name of annotated class in lowercase.</li>
  * 
- * <li>versionColumn defaults to "version"</li>
- * <li>versionField defaults to "id"</li>
- * <li>versionType defaults to {@code java.lang.Integer}</li>
+ * <li>versionColumn (Optional) DB column of version field"</li>
+ * <li>versionField (Optional) defaults to "version"</li>
+ * <li>versionType (Optional) defaults to {@code java.lang.Integer}</li>
  * 
- * entity jpa --class KitchenSink 
- * AUTO --table kitchen_sink
- *--readOnly true --serializable true 
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE) 
@@ -26,13 +23,13 @@ public @interface LombokJpaEntity
 {
 	String name() default "";
 
-	String idColumn() default "id";
+	String idColumn() default "";
 	String idField() default "id";
 	FieldType idType() default FieldType.LONG;
 	GenerationType idGeneration() default GenerationType.AUTO;
 	String idSequence() default "";
 	
-	String versionColumn() default "version";
+	String versionColumn() default "";
 	String versionField() default "version";
 	FieldType versionType() default FieldType.INTEGER;
 	

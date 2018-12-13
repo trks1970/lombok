@@ -12,5 +12,5 @@ public @interface Idx
 {
 	String name() default "";
 	String columns();
-	String unique() default "";
+	boolean unique() default false;
 }
