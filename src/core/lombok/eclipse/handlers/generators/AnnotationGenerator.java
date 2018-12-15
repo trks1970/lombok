@@ -24,41 +24,50 @@ import lombok.eclipse.Eclipse;
 
 public class AnnotationGenerator
 {
-	public  Annotation[] addAnnotation( TypeDeclaration typeDecl, String annotation )
+	private static final AnnotationGenerator instance = new AnnotationGenerator();
+	
+	private AnnotationGenerator() {}
+	
+	public static AnnotationGenerator instance() 
 	{
-		return addAnnotation( typeDecl, typeDecl.annotations, Eclipse.fromQualifiedName(annotation), null );
+		return instance;
+	}
+	
+	public  void addAnnotation( TypeDeclaration typeDecl, String annotation )
+	{
+		addAnnotation( typeDecl, typeDecl.annotations, Eclipse.fromQualifiedName(annotation), null );
 	}
 
-	public  Annotation[] addAnnotation( TypeDeclaration typeDecl, String annotation, ASTNode arg )
+	public  void addAnnotation( TypeDeclaration typeDecl, String annotation, ASTNode arg )
 	{
 		List<ASTNode> argList = new ArrayList<ASTNode>();
 		argList.add(  arg );
-		return addAnnotation( typeDecl, typeDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
+		addAnnotation( typeDecl, typeDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
 	}
 
-	public  Annotation[] addAnnotation( TypeDeclaration typeDecl, String annotation, List<ASTNode> argList )
+	public  void addAnnotation( TypeDeclaration typeDecl, String annotation, List<ASTNode> argList )
 	{
-		return addAnnotation( typeDecl, typeDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
+		addAnnotation( typeDecl, typeDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
 	}
 	
-	public  Annotation[] addAnnotation( FieldDeclaration fieldDecl, String annotation )
+	public  void addAnnotation( FieldDeclaration fieldDecl, String annotation )
 	{
-		return addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName(annotation), null );
+		addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName(annotation), null );
 	}
 
-	public  Annotation[] addAnnotation( FieldDeclaration fieldDecl, String annotation, ASTNode arg )
+	public  void addAnnotation( FieldDeclaration fieldDecl, String annotation, ASTNode arg )
 	{
 		List<ASTNode> argList = new ArrayList<ASTNode>();
 		argList.add(  arg );
-		return addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
+		addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
 	}
 
-	public  Annotation[] addAnnotation( FieldDeclaration fieldDecl, String annotation, List<ASTNode> argList )
+	public  void addAnnotation( FieldDeclaration fieldDecl, String annotation, List<ASTNode> argList )
 	{
-		return addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
+		addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
 	}
 	
-	public  Annotation[] injectAnnotation( ASTNode node, Annotation ann )
+	private  Annotation[] createAnnotationArray( ASTNode node, Annotation ann )
 	{
 		
 		Annotation[] originalAnnotationArray = null;
@@ -172,96 +181,9 @@ public class AnnotationGenerator
 	private  Annotation[] addAnnotation( ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn, List<ASTNode> argList )
 	{
 		Annotation annotation = createAnnotation(source, Eclipse.toQualifiedName(annotationTypeFqn), argList);
-		return injectAnnotation( source, annotation );
-		/*
-		if( originalAnnotationArray != null )
-		{
-			char[] simpleName = annotationTypeFqn[annotationTypeFqn.length - 1];
-			for( Annotation ann : originalAnnotationArray )
-			{
-				if( ann.type instanceof QualifiedTypeReference )
-				{
-					char[][] t = ( (QualifiedTypeReference) ann.type ).tokens;
-					if( Arrays.deepEquals( t, annotationTypeFqn ) )
-						return originalAnnotationArray;
-				}
-
-				if( ann.type instanceof SingleTypeReference )
-				{
-					char[] lastToken = ( (SingleTypeReference) ann.type ).token;
-					if( Arrays.equals( lastToken, simpleName ) )
-						return originalAnnotationArray;
-				}
-			}
-		}
-		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long) pS << 32 | pE;
-		long[] poss = new long[annotationTypeFqn.length];
-		Arrays.fill( poss, p );
-		QualifiedTypeReference qualifiedType = new QualifiedTypeReference( annotationTypeFqn, poss );
-		setGeneratedBy( qualifiedType, source );
-		Annotation ann = null;
-		if( argList != null && !argList.isEmpty() )
-		{
-			if( argList.size() == 1 )
-			{
-				ASTNode arg = argList.get( 0 );
-				if( arg instanceof Expression )
-				{
-					SingleMemberAnnotation sma = new SingleMemberAnnotation( qualifiedType, pS );
-					sma.declarationSourceEnd = pE;
-					arg.sourceStart = pS;
-					arg.sourceEnd = pE;
-					sma.memberValue = (Expression) arg;
-					setGeneratedBy( sma.memberValue, source );
-					ann = sma;
-				}
-				else if( arg instanceof MemberValuePair )
-				{
-					NormalAnnotation na = new NormalAnnotation( qualifiedType, pS );
-					na.declarationSourceEnd = pE;
-					arg.sourceStart = pS;
-					arg.sourceEnd = pE;
-					na.memberValuePairs = new MemberValuePair[] { (MemberValuePair) arg };
-					setGeneratedBy( na.memberValuePairs[0], source );
-					setGeneratedBy( na.memberValuePairs[0].value, source );
-					na.memberValuePairs[0].value.sourceStart = pS;
-					na.memberValuePairs[0].value.sourceEnd = pE;
-					ann = na;
-				}
-			}
-			else
-			{
-				NormalAnnotation na = new NormalAnnotation( qualifiedType, pS );
-				na.declarationSourceEnd = pE;
-				for( ASTNode arg : argList )
-				{
-					arg.sourceStart = pS;
-					arg.sourceEnd = pE;
-				}
-				na.memberValuePairs = argList.toArray( new MemberValuePair[argList.size()] );
-				for( int i = 0; i < na.memberValuePairs.length; i++ )
-				{
-					na.memberValuePairs[i].value.sourceStart = pS;
-					na.memberValuePairs[i].value.sourceEnd = pE;
-				}
-				ann = na;
-			}
-		}
-		else
-		{
-			MarkerAnnotation ma = new MarkerAnnotation( qualifiedType, pS );
-			ma.declarationSourceEnd = pE;
-			ann = ma;
-		}
-		setGeneratedBy( ann, source );
-		if( originalAnnotationArray == null )
-			return new Annotation[] { ann };
-		Annotation[] newAnnotationArray = new Annotation[originalAnnotationArray.length + 1];
-		System.arraycopy( originalAnnotationArray, 0, newAnnotationArray, 0, originalAnnotationArray.length );
-		newAnnotationArray[originalAnnotationArray.length] = ann;
-		return newAnnotationArray;
-		*/
+		Annotation[] anns = createAnnotationArray( source, annotation );
+		
+		return anns;
 	}
 	
 	private  Annotation[] annotationExists(Annotation[] originalAnnotationArray, char[][] annotationTypeFqn )

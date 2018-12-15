@@ -17,43 +17,53 @@ import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacHandlerUtil;
 
-public class AnnotationGenerator 
+public class AnnotationGenerator
 {
-	public static void addAnnotation( JCClassDecl typeDecl, JavacNode node, String annotation )
+	private static final AnnotationGenerator instance = new AnnotationGenerator();
+	
+	private AnnotationGenerator() {}
+	
+	public static AnnotationGenerator instance() 
 	{
-		addAnnotation( typeDecl.mods, node, typeDecl.pos, JavacHandlerUtil.getGeneratedBy(typeDecl), node.getContext(), annotation, null );
+		return instance;
+	}
+	
+	public void addAnnotation( JCClassDecl typeDecl, JavacNode node, String annotation )
+	{
+		addAnnotation( typeDecl.mods, node, typeDecl.pos, JavacHandlerUtil.getGeneratedBy( typeDecl ), node.getContext(), annotation, null );
 	}
 
-	public static void addAnnotation( JCClassDecl classDecl, JavacNode node, String annotation, JCExpression arg )
+	public void addAnnotation( JCClassDecl classDecl, JavacNode node, String annotation, JCExpression arg )
 	{
 		List<JCExpression> argList = List.<JCExpression> nil();
 		argList = argList.append( arg );
 		addAnnotation( classDecl, node, annotation, argList );
 	}
 
-	public static void addAnnotation( JCClassDecl classDecl, JavacNode node, String annotation, List<JCExpression> argList )
+	public void addAnnotation( JCClassDecl classDecl, JavacNode node, String annotation, List<JCExpression> argList )
 	{
-		addAnnotation( classDecl.mods, node, classDecl.pos, JavacHandlerUtil.getGeneratedBy(classDecl), node.getContext(), annotation, argList );
+		addAnnotation( classDecl.mods, node, classDecl.pos, JavacHandlerUtil.getGeneratedBy( classDecl ), node.getContext(), annotation, argList );
 	}
 
-	public static void addAnnotation( JCVariableDecl fieldDecl, JavacNode node, String annotation )
+	public void addAnnotation( JCVariableDecl fieldDecl, JavacNode node, String annotation )
 	{
-		addAnnotation( fieldDecl.mods, node, fieldDecl.pos, JavacHandlerUtil.getGeneratedBy(fieldDecl), node.getContext(), annotation, null );
+		addAnnotation( fieldDecl.mods, node, fieldDecl.pos, JavacHandlerUtil.getGeneratedBy( fieldDecl ), node.getContext(), annotation, null );
 	}
 
-	public static void addAnnotation( JCVariableDecl fieldDecl, JavacNode node, String annotation, JCExpression arg )
+	public void addAnnotation( JCVariableDecl fieldDecl, JavacNode node, String annotation, JCExpression arg )
 	{
 		List<JCExpression> argList = List.<JCExpression> nil();
 		argList = argList.append( arg );
 		addAnnotation( fieldDecl, node, annotation, argList );
 	}
 
-	public static void addAnnotation( JCVariableDecl fieldDecl, JavacNode node, String annotation, List<JCExpression> argList )
+	public void addAnnotation( JCVariableDecl fieldDecl, JavacNode node, String annotation, List<JCExpression> argList )
 	{
-		addAnnotation( fieldDecl.mods, node, fieldDecl.pos, JavacHandlerUtil.getGeneratedBy(fieldDecl), node.getContext(), annotation, argList );
+		addAnnotation( fieldDecl.mods, node, fieldDecl.pos, JavacHandlerUtil.getGeneratedBy( fieldDecl ), node.getContext(), annotation, argList );
 	}
-	
-	public static JCAnnotation createAnnotation( JCModifiers mods, JavacNode node, int pos, JCTree source, Context context, String annotationTypeFqn, List<JCExpression> argList )
+
+	public JCAnnotation createAnnotation( JCModifiers mods, JavacNode node, int pos, JCTree source, Context context, String annotationTypeFqn,
+			List<JCExpression> argList )
 	{
 		boolean isJavaLangBased;
 		String simpleName;
@@ -98,13 +108,13 @@ public class AnnotationGenerator
 				else if( arg instanceof JCAnnotation )
 				{
 					( (JCAnnotation) arg ).pos = pos;
-					for( JCExpression  exp : ( (JCAnnotation) arg ).args )
+					for( JCExpression exp : ( (JCAnnotation) arg ).args )
 					{
 						if( arg instanceof JCAssign )
 						{
 							( (JCAssign) exp ).lhs.pos = pos;
 							( (JCAssign) exp ).rhs.pos = pos;
-						}						
+						}
 					}
 				}
 			}
@@ -112,15 +122,15 @@ public class AnnotationGenerator
 		else
 		{
 			argList = List.<JCExpression> nil();
-		} 
+		}
 		JCAnnotation annotation = JavacHandlerUtil.recursiveSetGeneratedBy( maker.Annotation( annType, argList ), source, context );
 		System.out.println( "Created annotation " + annotation );
 		annotation.pos = pos;
 		return annotation;
-	}	
+	}
 
-
-	private static void addAnnotation( JCModifiers mods, JavacNode node, int pos, JCTree source, Context context, String annotationTypeFqn, List<JCExpression> argList )
+	private void addAnnotation( JCModifiers mods, JavacNode node, int pos, JCTree source, Context context, String annotationTypeFqn,
+			List<JCExpression> argList )
 	{
 		boolean isJavaLangBased;
 		String simpleName;
@@ -167,10 +177,9 @@ public class AnnotationGenerator
 		else
 		{
 			argList = List.<JCExpression> nil();
-		} 
+		}
 		JCAnnotation annotation = JavacHandlerUtil.recursiveSetGeneratedBy( maker.Annotation( annType, argList ), source, context );
-		System.out.println( "annotation " + annotation );
 		annotation.pos = pos;
 		mods.annotations = mods.annotations.append( annotation );
-	}	
+	}
 }

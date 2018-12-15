@@ -1,7 +1,5 @@
 package lombok.eclipse.handlers.generators;
 
-import static lombok.eclipse.handlers.generators.MemberValuePairGenerator.createMemberValuePair;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,12 +18,15 @@ public class AnnotationGeneratorTest
 {
 	private static final char[][] annotationTypeFqn = Eclipse.fromQualifiedName("lombok.experimental.jpa.LombokJpaEntity");
 	private AnnotationGenerator annotationGen;
+	private MemberValuePairGenerator mvpGen;
 	Annotation source;
 	
 	@Before
 	public void setUp()
 	{
-		annotationGen = new AnnotationGenerator();
+		annotationGen = AnnotationGenerator.instance();
+		mvpGen = MemberValuePairGenerator.instance();
+		
 		int pS = 0;
 		int pE = annotationTypeFqn.length;
 		long p = (long) pS << 32 | pE;
@@ -39,9 +40,9 @@ public class AnnotationGeneratorTest
 	public void testCreateAnnotation()
 	{	
 		List<ASTNode> indexArgs = new ArrayList<ASTNode>();
-		indexArgs = createMemberValuePair( "name", "test1", indexArgs );
-		indexArgs = createMemberValuePair( "columns", "a, b, c", indexArgs );
-		indexArgs = createMemberValuePair( "unique", true, indexArgs );
+		indexArgs = mvpGen.createMemberValuePair( "name", "test1", indexArgs );
+		indexArgs = mvpGen.createMemberValuePair( "columns", "a, b, c", indexArgs );
+		indexArgs = mvpGen.createMemberValuePair( "unique", true, indexArgs );
 		Annotation annotation = annotationGen.createAnnotation( source, "javax.persistence.Index", indexArgs );
 		Assert.assertEquals( "@javax.persistence.Index(name = \"test1\",columns = \"a, b, c\",unique = true)", annotation.toString( ) );
 	}

@@ -1,4 +1,4 @@
-package lombok.eclipse.handlers.jpa;
+package lombok.eclipse.handlers.jpa.entity;
 
 import static org.mockito.Mockito.*;
 
@@ -15,8 +15,9 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import lombok.eclipse.Eclipse;
-import lombok.experimental.jpa.Idx;
-import lombok.experimental.jpa.LombokJpaEntity;
+import lombok.eclipse.handlers.jpa.entity.HandleJpaEntity;
+import lombok.experimental.jpa.entity.Idx;
+import lombok.experimental.jpa.entity.LombokJpaEntity;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HandleJpaEntityTest
@@ -63,11 +64,12 @@ public class HandleJpaEntityTest
 	@Test
 	public void testAddTableAnnotation()
 	{
-		Annotation[] annotations = handler.addTableAnnotation( source, a, typeDecl );
-		for( int i = 0; i < annotations.length; i++ )
+		handler.addTableAnnotation( source, a, typeDecl );
+		for( int i = 0; i < typeDecl.annotations.length; i++ )
 		{
-			System.out.println( annotations[i] );
+			System.out.println( typeDecl.annotations[i] );
 		}
+		System.out.println( typeDecl );
 	}
 
 }

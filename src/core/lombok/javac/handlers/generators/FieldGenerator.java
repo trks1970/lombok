@@ -13,7 +13,15 @@ import lombok.javac.JavacTreeMaker;
 
 public class FieldGenerator
 {
-	public static JCVariableDecl createField( int modifier, String fieldName, String fieldType, JCAnnotation source, JavacNode annotationNode )
+	private static final FieldGenerator instance = new FieldGenerator();
+	
+	private FieldGenerator() {}
+	
+	public static FieldGenerator instance() 
+	{
+		return instance;
+	}
+	public JCVariableDecl createField( int modifier, String fieldName, String fieldType, JCAnnotation source, JavacNode annotationNode )
 	{
 		JCVariableDecl fieldDecl = findField( fieldName, annotationNode );
 		if( fieldDecl == null )
@@ -28,7 +36,7 @@ public class FieldGenerator
 		return fieldDecl;
 	}
 
-	private static JCVariableDecl findField( String fieldName, JavacNode node )
+	private JCVariableDecl findField( String fieldName, JavacNode node )
 	{
 		JCVariableDecl fieldDecl = null;
 		node = upToTypeNode( node );

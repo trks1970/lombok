@@ -348,12 +348,13 @@ public class AnnotationValues<A extends Annotation> {
 		}
 		
 		if (expected == Class.class) {
+			String classLit = ((ClassLiteral) guess).getClassName();
 			if (guess instanceof ClassLiteral) try {
-				String classLit = ((ClassLiteral) guess).getClassName();
+				
 				return Class.forName(toFQ(classLit));
 			} catch (ClassNotFoundException e) {
 				throw new AnnotationValueDecodeFail(v,
-					"Can't translate " + guess + " to a class object.", pos);
+					"Can't translate " + classLit + "<" + guess + ">" + " to a class object.", pos);
 			}
 		}
 		

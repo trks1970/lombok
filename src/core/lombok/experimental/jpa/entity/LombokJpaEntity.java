@@ -1,4 +1,4 @@
-package lombok.experimental.jpa;
+package lombok.experimental.jpa.entity;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

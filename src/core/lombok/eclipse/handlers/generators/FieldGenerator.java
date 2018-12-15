@@ -12,7 +12,17 @@ import lombok.eclipse.EclipseNode;
 
 public class FieldGenerator
 {
-	public static FieldDeclaration createField( int modifier, String fieldName, String fieldType, Annotation source, EclipseNode annotationNode )
+	private static final FieldGenerator instance = new FieldGenerator();
+	
+	private FieldGenerator() {}
+	
+	public static FieldGenerator instance() 
+	{
+		return instance;
+	}
+
+	
+	public FieldDeclaration createField( int modifier, String fieldName, String fieldType, Annotation source, EclipseNode annotationNode )
 	{
 		FieldDeclaration fieldDecl = findField( fieldName, annotationNode );
 		if( fieldDecl == null )
@@ -26,7 +36,7 @@ public class FieldGenerator
 		return fieldDecl;
 	}
 
-	private static FieldDeclaration findField( String fieldName, EclipseNode node )
+	private FieldDeclaration findField( String fieldName, EclipseNode node )
 	{
 		FieldDeclaration fieldDecl = null;
 		node = upToTypeNode( node );
