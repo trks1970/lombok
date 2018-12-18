@@ -142,7 +142,7 @@ public class HandleFieldDefaults extends EclipseASTAdapter {
 			if (!typeMatches(FieldDefaults.class, jn, typeTree)) continue;
 			
 			source = jn;
-			fieldDefaults = createAnnotation(FieldDefaults.class, jn);
+			fieldDefaults = createAnnotation(FieldDefaults.class,  jn);
 			levelIsExplicit = fieldDefaults.isExplicit("level");
 			makeFinalIsExplicit = fieldDefaults.isExplicit("makeFinal");
 			

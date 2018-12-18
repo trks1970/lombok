@@ -1,35 +1,96 @@
 package lombok.eclipse.handlers.generators;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
+import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TrueLiteral;
 
 public class MemberValuePairGenerator
 {
-	public static MemberValuePair createMemberValuePair( String attribute, String value )
+	private static final MemberValuePairGenerator instance = new MemberValuePairGenerator();
+	protected static final long[] NULL_POSS = {0L};
+	
+	private MemberValuePairGenerator() {}
+	
+	public static MemberValuePairGenerator instance() 
+	{
+		return instance;
+	}
+
+	public MemberValuePair createStringParameter( String attribute, String value )
 	{
 		return new MemberValuePair( attribute.toCharArray(), 0, 0, new StringLiteral( value.toCharArray(), 0,0,0 ) );
 	}
 
-	public static MemberValuePair createMemberValuePair( String attribute, boolean value )
+	public MemberValuePair createBooleanParameter( String attribute, boolean value )
 	{
 		return new MemberValuePair( attribute.toCharArray(), 0, 0, value ? new TrueLiteral( 0, 0 ) : new FalseLiteral( 0, 0 ) );
 	}
 
-	public static List<ASTNode> createMemberValuePair( String attribute, String value, List<ASTNode> argList )
+	public MemberValuePair createTypeRefParameter( String attribute, String typeFQN )
 	{
-		argList.add( createMemberValuePair( attribute, value ) );
+		return new MemberValuePair( attribute.toCharArray(), 0, 0, new QualifiedTypeReference(fromQualifiedName(typeFQN), NULL_POSS ) );
+	}
+
+	public MemberValuePair createNameReference( String attribute, String nameFQN )
+	{
+		return new MemberValuePair( attribute.toCharArray(), 0, 0, 
+				new QualifiedNameReference( fromQualifiedName(nameFQN), NULL_POSS, 0, 0 ) );
+	}
+
+	public MemberValuePair createArrayParameter( String attribute, List<Annotation> values )
+	{
+		ArrayInitializer initializer = new ArrayInitializer();
+		initializer.expressions = values.toArray( new Expression[values.size()] );
+		return new MemberValuePair( attribute.toCharArray(), 0, 0, initializer );
+	}
+
+	public List<ASTNode> addStringParameter( String attribute, String value, List<ASTNode> argList )
+	{
+		argList.add( createStringParameter( attribute, value ) );
 		return argList;
 	}
 
-	public static List<ASTNode> createMemberValuePair( String attribute, boolean value, List<ASTNode> argList )
+	public List<ASTNode> addBooleanAttribute( String attribute, boolean value, List<ASTNode> argList )
 	{
-		argList.add( createMemberValuePair( attribute, value ) );
+		argList.add( createBooleanParameter( attribute, value ) );
 		return argList;
+	}
+
+	public List<ASTNode> addArrayParameter( String attribute, List<Annotation> values, List<ASTNode> argList )
+	{
+		argList.add( createArrayParameter( attribute, values ) );
+		return argList;
+	}
+
+	public List<ASTNode> addTypeRefParameter( String attribute, String typeFQN, List<ASTNode> argList )
+	{
+		argList.add( createTypeRefParameter( attribute, typeFQN ) );
+		return argList;
+	}
+
+	public List<ASTNode> addNameReference( String attribute, String type, List<ASTNode> argList )
+	{
+		argList.add( createNameReference( attribute, type ) );
+		return argList;
+	}
+
+	public char[][] fromQualifiedName(String typeName) {
+		String[] split = Pattern.compile("\\.").split(typeName);
+		char[][] result = new char[split.length][];
+		for (int i = 0; i < split.length; i++) {
+			result[i] = split[i].toCharArray();
+		}
+		return result;
 	}
 
 }

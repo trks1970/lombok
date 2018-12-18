@@ -201,7 +201,7 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 	@Override public <Z extends java.lang.annotation.Annotation> AnnotationValues<Z> findAnnotation(Class<Z> type) {
 		EclipseNode annotation = EclipseHandlerUtil.findAnnotation(type, this);
 		if (annotation == null) return null;
-		return EclipseHandlerUtil.createAnnotation(type, annotation);
+		return EclipseHandlerUtil.createAnnotation(type, annotation );
 	}
 	
 	private Integer getModifiers() {

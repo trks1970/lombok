@@ -1,4 +1,4 @@
-package lombok.experimental.jpa;
+package lombok.experimental.jpa.entity;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -21,12 +21,19 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE) 
 public @interface LombokJpaEntity 
 {
+	public static final String ENTITY = "javax.persistence.Entity";
+	
+	public static final String AUTO = "javax.persistence.GenerationType.AUTO";
+	public static final String IDENTITY = "javax.persistence.GenerationType.IDENTITY";
+	public static final String SEQUENCE = "javax.persistence.GenerationType.SEQUENCE";
+
+	
 	String name() default "";
 
 	String idColumn() default "";
 	String idField() default "id";
 	FieldType idType() default FieldType.LONG;
-	GenerationType idGeneration() default GenerationType.AUTO;
+	IDGenerator idGeneration() default IDGenerator.AUTO;
 	String idSequence() default "";
 	
 	String versionColumn() default "";

@@ -40,7 +40,6 @@ public class TestConfiguration {
 	public void testDisplayVerbose() throws Exception {
 		
 		
-		@SuppressWarnings("unchecked")
 		Collection<ConfigurationKey<?>> keys = Arrays.asList(ACCESSORS_FLAG_USAGE, ACCESSORS_CHAIN, ACCESSORS_PREFIX, LOG_ANY_FIELD_NAME);
 		
 		String baseName = "test/configuration/resource/configurationRoot/";

@@ -24,41 +24,56 @@ import lombok.eclipse.Eclipse;
 
 public class AnnotationGenerator
 {
-	public static Annotation[] addAnnotation( TypeDeclaration typeDecl, String annotation )
+	private static final AnnotationGenerator instance = new AnnotationGenerator();
+	
+	private AnnotationGenerator() {}
+	
+	public static AnnotationGenerator instance() 
 	{
-		return addAnnotation( typeDecl, typeDecl.annotations, Eclipse.fromQualifiedName(annotation), null );
+		return instance;
+	}
+		
+	public Annotation createAnnotation( TypeDeclaration typeDecl, String annotationFQN )
+	{
+		return createAnnotation( typeDecl, annotationFQN, new ArrayList<ASTNode>() );
 	}
 
-	public static Annotation[] addAnnotation( TypeDeclaration typeDecl, String annotation, ASTNode arg )
+	public  Annotation createAnnotation( TypeDeclaration typeDecl, String annotationFQN, ASTNode arg )
 	{
 		List<ASTNode> argList = new ArrayList<ASTNode>();
 		argList.add(  arg );
-		return addAnnotation( typeDecl, typeDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
+		return createAnnotation( typeDecl, annotationFQN, argList );
 	}
 
-	public static Annotation[] addAnnotation( TypeDeclaration typeDecl, String annotation, List<ASTNode> argList )
+	public Annotation createAnnotation( TypeDeclaration typeDecl, String annotationFQN, List<ASTNode> argList )
 	{
-		return addAnnotation( typeDecl, typeDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
+		Annotation ann = doCreateAnnotation( typeDecl, annotationFQN, argList );
+		Annotation[] annotations = createAnnotationArray( typeDecl, ann );
+		injectAnnotation( typeDecl, annotations );
+		return ann;
 	}
 	
-	public static Annotation[] addAnnotation( FieldDeclaration fieldDecl, String annotation )
+	public Annotation createAnnotation( FieldDeclaration fieldDecl, String annotationFQN )
 	{
-		return addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName(annotation), null );
+		return createAnnotation( fieldDecl, annotationFQN, new ArrayList<ASTNode>() );
 	}
 
-	public static Annotation[] addAnnotation( FieldDeclaration fieldDecl, String annotation, ASTNode arg )
+	public Annotation createAnnotation( FieldDeclaration fieldDecl, String annotationFQN, ASTNode arg )
 	{
 		List<ASTNode> argList = new ArrayList<ASTNode>();
 		argList.add(  arg );
-		return addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
+		return createAnnotation( fieldDecl, annotationFQN, argList );
 	}
 
-	public static Annotation[] addAnnotation( FieldDeclaration fieldDecl, String annotation, List<ASTNode> argList )
+	public Annotation createAnnotation( FieldDeclaration fieldDecl, String annotationFQN, List<ASTNode> argList )
 	{
-		return addAnnotation( fieldDecl, fieldDecl.annotations, Eclipse.fromQualifiedName(annotation), argList );
+		Annotation ann = doCreateAnnotation( fieldDecl, annotationFQN, argList );
+		Annotation[] annotations = createAnnotationArray( fieldDecl, ann );
+		injectAnnotation( fieldDecl, annotations );
+		return ann;
 	}
 	
-	public static Annotation[] injectAnnotation( ASTNode node, Annotation ann )
+	private  Annotation[] createAnnotationArray( ASTNode node, Annotation ann )
 	{
 		
 		Annotation[] originalAnnotationArray = null;
@@ -82,9 +97,8 @@ public class AnnotationGenerator
 		{
 			throw new IllegalStateException("Unsupported ASTNode <" + node.getClass().getName() + "> for annotation injection." );
 		}
-
-		Annotation[] newAnnotationArray = annotationExists(originalAnnotationArray, ann.type.getTypeName() ); 
-		if( newAnnotationArray == null )
+		Annotation[] newAnnotationArray = new Annotation[] {};
+		if( !annotationExists( node, ann.type.getTypeName() ) )
 		{
 			if( originalAnnotationArray == null )
 			{
@@ -100,7 +114,7 @@ public class AnnotationGenerator
 		return newAnnotationArray;
 	}
 	
-	public static Annotation createAnnotation(ASTNode source, String annotationFQN, List<ASTNode> argList )
+	public  Annotation doCreateAnnotation(ASTNode source, String annotationFQN, List<ASTNode> argList )
 	{
 		int pS = source.sourceStart;
 		int pE = source.sourceEnd;
@@ -169,131 +183,89 @@ public class AnnotationGenerator
 		return ann;
 	}
 	
-	private static Annotation[] addAnnotation( ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn, List<ASTNode> argList )
+	
+	private  boolean annotationExists( ASTNode node, char[][] annotationTypeFqn )
 	{
-		Annotation annotation = createAnnotation(source, Eclipse.toQualifiedName(annotationTypeFqn), argList);
-		return injectAnnotation( source, annotation );
-		/*
+		boolean retVal = false;
+		Annotation[]  originalAnnotationArray = getCurrentAnnotations( node );
+		char[] simpleName = annotationTypeFqn[annotationTypeFqn.length - 1];
 		if( originalAnnotationArray != null )
 		{
-			char[] simpleName = annotationTypeFqn[annotationTypeFqn.length - 1];
 			for( Annotation ann : originalAnnotationArray )
 			{
 				if( ann.type instanceof QualifiedTypeReference )
 				{
 					char[][] t = ( (QualifiedTypeReference) ann.type ).tokens;
 					if( Arrays.deepEquals( t, annotationTypeFqn ) )
-						return originalAnnotationArray;
+					{
+						retVal = true;
+						break;
+					}
 				}
-
+	
 				if( ann.type instanceof SingleTypeReference )
 				{
 					char[] lastToken = ( (SingleTypeReference) ann.type ).token;
 					if( Arrays.equals( lastToken, simpleName ) )
-						return originalAnnotationArray;
+					{
+						retVal = true;
+						break;
+					}
 				}
 			}
 		}
-		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long) pS << 32 | pE;
-		long[] poss = new long[annotationTypeFqn.length];
-		Arrays.fill( poss, p );
-		QualifiedTypeReference qualifiedType = new QualifiedTypeReference( annotationTypeFqn, poss );
-		setGeneratedBy( qualifiedType, source );
-		Annotation ann = null;
-		if( argList != null && !argList.isEmpty() )
+		return retVal;
+	}
+		
+	private Annotation[] getCurrentAnnotations(ASTNode node)
+	{
+		Annotation[] originalAnnotationArray = new Annotation[] {};
+		if( node instanceof FieldDeclaration )
 		{
-			if( argList.size() == 1 )
-			{
-				ASTNode arg = argList.get( 0 );
-				if( arg instanceof Expression )
-				{
-					SingleMemberAnnotation sma = new SingleMemberAnnotation( qualifiedType, pS );
-					sma.declarationSourceEnd = pE;
-					arg.sourceStart = pS;
-					arg.sourceEnd = pE;
-					sma.memberValue = (Expression) arg;
-					setGeneratedBy( sma.memberValue, source );
-					ann = sma;
-				}
-				else if( arg instanceof MemberValuePair )
-				{
-					NormalAnnotation na = new NormalAnnotation( qualifiedType, pS );
-					na.declarationSourceEnd = pE;
-					arg.sourceStart = pS;
-					arg.sourceEnd = pE;
-					na.memberValuePairs = new MemberValuePair[] { (MemberValuePair) arg };
-					setGeneratedBy( na.memberValuePairs[0], source );
-					setGeneratedBy( na.memberValuePairs[0].value, source );
-					na.memberValuePairs[0].value.sourceStart = pS;
-					na.memberValuePairs[0].value.sourceEnd = pE;
-					ann = na;
-				}
-			}
-			else
-			{
-				NormalAnnotation na = new NormalAnnotation( qualifiedType, pS );
-				na.declarationSourceEnd = pE;
-				for( ASTNode arg : argList )
-				{
-					arg.sourceStart = pS;
-					arg.sourceEnd = pE;
-				}
-				na.memberValuePairs = argList.toArray( new MemberValuePair[argList.size()] );
-				for( int i = 0; i < na.memberValuePairs.length; i++ )
-				{
-					na.memberValuePairs[i].value.sourceStart = pS;
-					na.memberValuePairs[i].value.sourceEnd = pE;
-				}
-				ann = na;
-			}
+			originalAnnotationArray = ((FieldDeclaration)node).annotations;
+		}
+		else if( node instanceof MethodDeclaration )
+		{
+			originalAnnotationArray = ((MethodDeclaration)node).annotations;
+		}
+		else if( node instanceof ConstructorDeclaration )
+		{
+			originalAnnotationArray = ((ConstructorDeclaration)node).annotations;
+		}
+		else if( node instanceof TypeDeclaration )
+		{
+			originalAnnotationArray = ((TypeDeclaration)node).annotations;
 		}
 		else
 		{
-			MarkerAnnotation ma = new MarkerAnnotation( qualifiedType, pS );
-			ma.declarationSourceEnd = pE;
-			ann = ma;
+			throw new IllegalStateException("Unsupported ASTNode <" + node.getClass().getName() + "> for annotation injection." );
 		}
-		setGeneratedBy( ann, source );
-		if( originalAnnotationArray == null )
-			return new Annotation[] { ann };
-		Annotation[] newAnnotationArray = new Annotation[originalAnnotationArray.length + 1];
-		System.arraycopy( originalAnnotationArray, 0, newAnnotationArray, 0, originalAnnotationArray.length );
-		newAnnotationArray[originalAnnotationArray.length] = ann;
-		return newAnnotationArray;
-		*/
+		return originalAnnotationArray;
 	}
 	
-	private static Annotation[] annotationExists(Annotation[] originalAnnotationArray, char[][] annotationTypeFqn )
+	private void injectAnnotation( ASTNode node, Annotation[] annotationArray )
 	{
-		Annotation[]  annotations = null;
-		if( originalAnnotationArray != null )
+		if( node instanceof FieldDeclaration )
 		{
-			char[] simpleName = annotationTypeFqn[annotationTypeFqn.length - 1];
-			for( Annotation ann : originalAnnotationArray )
-			{
-				if( ann.type instanceof QualifiedTypeReference )
-				{
-					char[][] t = ( (QualifiedTypeReference) ann.type ).tokens;
-					if( Arrays.deepEquals( t, annotationTypeFqn ) )
-					{
-						annotations = originalAnnotationArray;
-						break;
-					}
-				}
-
-				if( ann.type instanceof SingleTypeReference )
-				{
-					char[] lastToken = ( (SingleTypeReference) ann.type ).token;
-					if( Arrays.equals( lastToken, simpleName ) )
-					{
-						annotations = originalAnnotationArray;
-						break;
-					}
-				}
-			}
+			((FieldDeclaration)node).annotations = annotationArray;
 		}
-		return annotations;
+		else if( node instanceof MethodDeclaration )
+		{
+			((MethodDeclaration)node).annotations = annotationArray;
+		}
+		else if( node instanceof ConstructorDeclaration )
+		{
+			((ConstructorDeclaration)node).annotations = annotationArray;
+		}
+		else if( node instanceof TypeDeclaration )
+		{
+			((TypeDeclaration)node).annotations = annotationArray;
+		}
+		else
+		{
+			throw new IllegalStateException("Unsupported ASTNode <" + node.getClass().getName() + "> for annotation injection." );
+		}
 	}
+
 
 }

@@ -1,6 +1,6 @@
-package lombok.experimental.jpa;
+package lombok.experimental.jpa.entity;
 
-public enum GenerationType 
+public enum IDGenerator 
 {
 	AUTO("javax.persistence.GenerationType.AUTO"),
 	IDENTITY("javax.persistence.GenerationType.IDENTITY"),
@@ -9,7 +9,7 @@ public enum GenerationType
 	
 	private final String generator;
 	
-	private GenerationType(String type)
+	private IDGenerator(String type)
 	{
 		this.generator = type;
 	}
@@ -19,7 +19,7 @@ public enum GenerationType
 		return generator;
 	}
 	
-	public static GenerationType fromValue(String v) 
+	public static IDGenerator fromValue(String v) 
 	{
         return valueOf(v);
 	}

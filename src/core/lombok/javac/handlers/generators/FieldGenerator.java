@@ -8,18 +8,20 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
-import lombok.experimental.jpa.Idx;
-import lombok.experimental.jpa.LombokJpaEntity;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 
-@LombokJpaEntity(indexes = {
-	@Idx(name="test1",unique=true,columns="id, version"),
-	@Idx(name="test2",columns="id, text")
-})
 public class FieldGenerator
 {
-	public static JCVariableDecl createField( int modifier, String fieldName, String fieldType, JCAnnotation source, JavacNode annotationNode )
+	private static final FieldGenerator instance = new FieldGenerator();
+	
+	private FieldGenerator() {}
+	
+	public static FieldGenerator instance() 
+	{
+		return instance;
+	}
+	public JCVariableDecl createField( int modifier, String fieldName, String fieldType, JCAnnotation source, JavacNode annotationNode )
 	{
 		JCVariableDecl fieldDecl = findField( fieldName, annotationNode );
 		if( fieldDecl == null )
@@ -34,7 +36,7 @@ public class FieldGenerator
 		return fieldDecl;
 	}
 
-	private static JCVariableDecl findField( String fieldName, JavacNode node )
+	private JCVariableDecl findField( String fieldName, JavacNode node )
 	{
 		JCVariableDecl fieldDecl = null;
 		node = upToTypeNode( node );

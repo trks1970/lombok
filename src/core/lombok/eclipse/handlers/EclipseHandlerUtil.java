@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
@@ -46,6 +47,7 @@ import lombok.Lombok;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
+import lombok.core.LombokLogger;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.configuration.TypeName;
@@ -119,11 +121,15 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+
 /**
  * Container for static utility methods useful to handlers written for eclipse.
  */
 public class EclipseHandlerUtil
 {
+	private static final Logger LOG = LombokLogger.getConsoleLogger();
+
 	private EclipseHandlerUtil()
 	{
 		// Prevent instantiation
@@ -146,8 +152,7 @@ public class EclipseHandlerUtil
 	{
 		ProblemReporter.error( message, ex );
 		if( cud != null )
-			EclipseAST.addProblemToCompilationResult( cud.getFileName(), cud.compilationResult, false,
-					message + " - See error log.", 0, 0 );
+			EclipseAST.addProblemToCompilationResult( cud.getFileName(), cud.compilationResult, false, message + " - See error log.", 0, 0 );
 	}
 
 	/**
@@ -182,8 +187,8 @@ public class EclipseHandlerUtil
 
 	public static MarkerAnnotation generateDeprecatedAnnotation( ASTNode source )
 	{
-		QualifiedTypeReference qtr = new QualifiedTypeReference( new char[][] { { 'j', 'a', 'v', 'a' },
-				{ 'l', 'a', 'n', 'g' }, { 'D', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd' } }, poss( source, 3 ) );
+		QualifiedTypeReference qtr = new QualifiedTypeReference(
+				new char[][] { { 'j', 'a', 'v', 'a' }, { 'l', 'a', 'n', 'g' }, { 'D', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd' } }, poss( source, 3 ) );
 		setGeneratedBy( qtr, source );
 		MarkerAnnotation ma = new MarkerAnnotation( qtr, source.sourceStart );
 		// No matter what value you input for sourceEnd, the AST->DOM converter
@@ -280,8 +285,7 @@ public class EclipseHandlerUtil
 		return resolver.typeMatches( node, type, typeName );
 	}
 
-	public static void sanityCheckForMethodGeneratingAnnotationsOnBuilderClass( EclipseNode typeNode,
-			EclipseNode errorNode )
+	public static void sanityCheckForMethodGeneratingAnnotationsOnBuilderClass( EclipseNode typeNode, EclipseNode errorNode )
 	{
 		List<String> disallowed = null;
 		for( EclipseNode child : typeNode.down() )
@@ -326,8 +330,7 @@ public class EclipseHandlerUtil
 			ann.declarationSourceEnd = ann.sourceEnd = ann.statementEnd = pE;
 			try
 			{
-				reflectSet( ANNOTATION__MEMBER_VALUE_PAIR_NAME, ann,
-						reflect( ANNOTATION__MEMBER_VALUE_PAIR_NAME, annotation ) );
+				reflectSet( ANNOTATION__MEMBER_VALUE_PAIR_NAME, ann, reflect( ANNOTATION__MEMBER_VALUE_PAIR_NAME, annotation ) );
 			}
 			catch( Exception ignore )
 			{
@@ -343,8 +346,7 @@ public class EclipseHandlerUtil
 			ann.memberValue = copyAnnotationMemberValue( ( (SingleMemberAnnotation) annotation ).memberValue );
 			try
 			{
-				reflectSet( ANNOTATION__MEMBER_VALUE_PAIR_NAME, ann,
-						reflect( ANNOTATION__MEMBER_VALUE_PAIR_NAME, annotation ) );
+				reflectSet( ANNOTATION__MEMBER_VALUE_PAIR_NAME, ann, reflect( ANNOTATION__MEMBER_VALUE_PAIR_NAME, annotation ) );
 			}
 			catch( Exception ignore )
 			{
@@ -366,13 +368,12 @@ public class EclipseHandlerUtil
 			{
 				ann.memberValuePairs = new MemberValuePair[inPairs.length];
 				for( int i = 0; i < inPairs.length; i++ )
-					ann.memberValuePairs[i] = new MemberValuePair( inPairs[i].name, inPairs[i].sourceStart,
-							inPairs[i].sourceEnd, copyAnnotationMemberValue( inPairs[i].value ) );
+					ann.memberValuePairs[i] = new MemberValuePair( inPairs[i].name, inPairs[i].sourceStart, inPairs[i].sourceEnd,
+							copyAnnotationMemberValue( inPairs[i].value ) );
 			}
 			try
 			{
-				reflectSet( ANNOTATION__MEMBER_VALUE_PAIR_NAME, ann,
-						reflect( ANNOTATION__MEMBER_VALUE_PAIR_NAME, annotation ) );
+				reflectSet( ANNOTATION__MEMBER_VALUE_PAIR_NAME, ann, reflect( ANNOTATION__MEMBER_VALUE_PAIR_NAME, annotation ) );
 			}
 			catch( Exception ignore )
 			{
@@ -476,14 +477,11 @@ public class EclipseHandlerUtil
 			return LongLiteral.buildLongLiteral( ( (Literal) in ).source(), s, e );
 
 		if( in instanceof StringLiteral )
-			return new StringLiteral( ( (Literal) in ).source(), s, e,
-					reflectInt( STRING_LITERAL__LINE_NUMBER, in ) + 1 );
+			return new StringLiteral( ( (Literal) in ).source(), s, e, reflectInt( STRING_LITERAL__LINE_NUMBER, in ) + 1 );
 		if( in instanceof ExtendedStringLiteral )
 		{
-			StringLiteral str = new StringLiteral( ( (Literal) in ).source(), s, e,
-					reflectInt( STRING_LITERAL__LINE_NUMBER, in ) + 1 );
-			StringLiteral empty = new StringLiteral( new char[0], s, e,
-					reflectInt( STRING_LITERAL__LINE_NUMBER, in ) + 1 );
+			StringLiteral str = new StringLiteral( ( (Literal) in ).source(), s, e, reflectInt( STRING_LITERAL__LINE_NUMBER, in ) + 1 );
+			StringLiteral empty = new StringLiteral( new char[0], s, e, reflectInt( STRING_LITERAL__LINE_NUMBER, in ) + 1 );
 			return new ExtendedStringLiteral( str, empty );
 		}
 		if( in instanceof StringLiteralConcatenation )
@@ -494,8 +492,7 @@ public class EclipseHandlerUtil
 				return new StringLiteral( new char[0], s, e, 0 );
 			if( literals.length == 1 )
 				return copyAnnotationMemberValue0( literals[0] );
-			StringLiteralConcatenation c = new StringLiteralConcatenation( (StringLiteral) literals[0],
-					(StringLiteral) literals[1] );
+			StringLiteralConcatenation c = new StringLiteralConcatenation( (StringLiteral) literals[0], (StringLiteral) literals[1] );
 			for( int i = 2; i < literals.length; i++ )
 				c = c.extendsWith( (StringLiteral) literals[i] );
 			return c;
@@ -684,8 +681,7 @@ public class EclipseHandlerUtil
 				}
 			}
 
-			TypeReference typeRef = new ParameterizedQualifiedTypeReference( iRef.tokens, args, iRef.dimensions(),
-					copy( iRef.sourcePositions ) );
+			TypeReference typeRef = new ParameterizedQualifiedTypeReference( iRef.tokens, args, iRef.dimensions(), copy( iRef.sourcePositions ) );
 			copyTypeAnns( ref, typeRef );
 			if( source != null )
 				setGeneratedBy( typeRef, source );
@@ -695,8 +691,7 @@ public class EclipseHandlerUtil
 		if( ref instanceof ArrayQualifiedTypeReference )
 		{
 			ArrayQualifiedTypeReference iRef = (ArrayQualifiedTypeReference) ref;
-			TypeReference typeRef = new ArrayQualifiedTypeReference( iRef.tokens, iRef.dimensions(),
-					copy( iRef.sourcePositions ) );
+			TypeReference typeRef = new ArrayQualifiedTypeReference( iRef.tokens, iRef.dimensions(), copy( iRef.sourcePositions ) );
 			copyTypeAnns( ref, typeRef );
 			if( source != null )
 				setGeneratedBy( typeRef, source );
@@ -730,8 +725,7 @@ public class EclipseHandlerUtil
 				}
 			}
 
-			TypeReference typeRef = new ParameterizedSingleTypeReference( iRef.token, args, iRef.dimensions(),
-					(long) iRef.sourceStart << 32 | iRef.sourceEnd );
+			TypeReference typeRef = new ParameterizedSingleTypeReference( iRef.token, args, iRef.dimensions(), (long) iRef.sourceStart << 32 | iRef.sourceEnd );
 			copyTypeAnns( ref, typeRef );
 			if( source != null )
 				setGeneratedBy( typeRef, source );
@@ -741,8 +735,7 @@ public class EclipseHandlerUtil
 		if( ref instanceof ArrayTypeReference )
 		{
 			ArrayTypeReference iRef = (ArrayTypeReference) ref;
-			TypeReference typeRef = new ArrayTypeReference( iRef.token, iRef.dimensions(),
-					(long) iRef.sourceStart << 32 | iRef.sourceEnd );
+			TypeReference typeRef = new ArrayTypeReference( iRef.token, iRef.dimensions(), (long) iRef.sourceStart << 32 | iRef.sourceEnd );
 			copyTypeAnns( ref, typeRef );
 			if( source != null )
 				setGeneratedBy( typeRef, source );
@@ -767,8 +760,7 @@ public class EclipseHandlerUtil
 		if( ref instanceof SingleTypeReference )
 		{
 			SingleTypeReference iRef = (SingleTypeReference) ref;
-			TypeReference typeRef = new SingleTypeReference( iRef.token,
-					(long) iRef.sourceStart << 32 | iRef.sourceEnd );
+			TypeReference typeRef = new SingleTypeReference( iRef.token, (long) iRef.sourceStart << 32 | iRef.sourceEnd );
 			copyTypeAnns( ref, typeRef );
 			if( source != null )
 				setGeneratedBy( typeRef, source );
@@ -977,8 +969,7 @@ public class EclipseHandlerUtil
 	 * 
 	 * This is a guess, but a decent one.
 	 */
-	public static boolean annotationTypeMatches( Class<? extends java.lang.annotation.Annotation> type,
-			EclipseNode node )
+	public static boolean annotationTypeMatches( Class<? extends java.lang.annotation.Annotation> type, EclipseNode node )
 	{
 		if( node.getKind() != Kind.ANNOTATION )
 			return false;
@@ -1020,8 +1011,7 @@ public class EclipseHandlerUtil
 				int idx = 0;
 				for( TypeParameter param : typeDecl.typeParameters )
 				{
-					TypeReference typeRef = new SingleTypeReference( param.name,
-							(long) param.sourceStart << 32 | param.sourceEnd );
+					TypeReference typeRef = new SingleTypeReference( param.name, (long) param.sourceStart << 32 | param.sourceEnd );
 					if( source != null )
 						setGeneratedBy( typeRef, source );
 					refs[idx++] = typeRef;
@@ -1245,8 +1235,7 @@ public class EclipseHandlerUtil
 			if( parts.length > 1 )
 			{
 				TypeReference[][] typeArguments = params.toArray( new TypeReference[0][] );
-				TypeReference result = new ParameterizedQualifiedTypeReference( parts, typeArguments, dims,
-						poss( pos, parts.length ) );
+				TypeReference result = new ParameterizedQualifiedTypeReference( parts, typeArguments, dims, poss( pos, parts.length ) );
 				setGeneratedBy( result, pos );
 				return result;
 			}
@@ -1278,14 +1267,13 @@ public class EclipseHandlerUtil
 		setGeneratedBy( result, pos );
 		return result;
 	}
-
+	
 	/**
 	 * Provides AnnotationValues with the data it needs to do its thing.
 	 */
-	public static <A extends java.lang.annotation.Annotation> AnnotationValues<A> createAnnotation( Class<A> type,
-			final EclipseNode annotationNode )
+	public static <A extends java.lang.annotation.Annotation> AnnotationValues<A> createAnnotation( Class<A> type, /*final Annotation annotation,*/ final EclipseNode annotationNode )
 	{
-
+		LOG.fine( ">>> createAnnotation enter" );
 		final Annotation annotation = (Annotation) annotationNode.get();
 		Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
 
@@ -1294,6 +1282,7 @@ public class EclipseHandlerUtil
 		if( memberValuePairs != null )
 			for( final MemberValuePair pair : memberValuePairs )
 			{
+				LOG.fine( "pair " + pair );
 				List<String> raws = new ArrayList<String>();
 				List<Object> expressionValues = new ArrayList<Object>();
 				List<Object> guesses = new ArrayList<Object>();
@@ -1302,24 +1291,54 @@ public class EclipseHandlerUtil
 				char[] n = pair.name;
 				String mName = ( n == null || n.length == 0 ) ? "value" : new String( pair.name );
 				final Expression rhs = pair.value;
-				if( rhs instanceof ArrayInitializer )
-				{
-					expressions = ( (ArrayInitializer) rhs ).expressions;
-				}
-				else if( rhs != null )
-				{
+				if (rhs instanceof ArrayInitializer) {
+					expressions = ((ArrayInitializer) rhs).expressions;
+				} else if (rhs != null) {
 					expressions = new Expression[] { rhs };
 				}
-				if( expressions != null )
+				if (expressions != null) for (Expression ex : expressions) {
+					StringBuffer sb = new StringBuffer();
+					ex.print(0, sb);
+					raws.add(sb.toString());
+					expressionValues.add(ex);
+					guesses.add(calculateValue(ex));
+				}
+				/*if( rhs instanceof ArrayInitializer )
+				{
+					LOG.fine( "ArrayInitializer " + rhs );
+					expressions = ( (ArrayInitializer) rhs ).expressions;
 					for( Expression ex : expressions )
 					{
 						StringBuffer sb = new StringBuffer();
 						ex.print( 0, sb );
 						raws.add( sb.toString() );
 						expressionValues.add( ex );
+						LOG.fine( "ex " + ex );
+						LOG.fine( "ex is " + ex.getClass().getName() );
+						if( ex instanceof Annotation )
+						{
+							guesses.add( createAnnotation( type, (Annotation)ex, annotationNode ) );
+						}
+						else
+						{
+							guesses.add( calculateValue( ex ) );
+						}
+					}
+				}
+				else if( rhs != null )
+				{
+					LOG.fine( "Expression " + rhs );
+					expressions = new Expression[] { rhs };
+					for( Expression ex : expressions )
+					{
+						StringBuffer sb = new StringBuffer();
+						ex.print( 0, sb );
+						raws.add( sb.toString() );
+						expressionValues.add( ex );
+						LOG.info( "calculateValue " + calculateValue( ex ) );
 						guesses.add( calculateValue( ex ) );
 					}
-
+				}*/
 				final Expression[] exprs = expressions;
 				values.put( mName, new AnnotationValue( annotationNode, raws, expressionValues, guesses, true )
 				{
@@ -1337,7 +1356,7 @@ public class EclipseHandlerUtil
 
 						int sourceStart = ex.sourceStart;
 						int sourceEnd = ex.sourceEnd;
-
+						LOG.fine( "Adding error" + message + " " + ex );
 						annotationNode.addError( message, sourceStart, sourceEnd );
 					}
 
@@ -1355,7 +1374,7 @@ public class EclipseHandlerUtil
 
 						int sourceStart = ex.sourceStart;
 						int sourceEnd = ex.sourceEnd;
-
+						LOG.fine( "Adding warning " + message + " " + ex );
 						annotationNode.addWarning( message, sourceStart, sourceEnd );
 					}
 				} );
@@ -1368,8 +1387,7 @@ public class EclipseHandlerUtil
 			String name = m.getName();
 			if( !values.containsKey( name ) )
 			{
-				values.put( name, new AnnotationValue( annotationNode, new ArrayList<String>(), new ArrayList<Object>(),
-						new ArrayList<Object>(), false )
+				values.put( name, new AnnotationValue( annotationNode, new ArrayList<String>(), new ArrayList<Object>(), new ArrayList<Object>(), false )
 				{
 					@Override
 					public void setError( String message, int valueIdx )
@@ -1703,8 +1721,7 @@ public class EclipseHandlerUtil
 	 */
 	public static List<String> toAllGetterNames( EclipseNode field, boolean isBoolean )
 	{
-		return HandlerUtil.toAllGetterNames( field.getAst(), getAccessorsForField( field ), field.getName(),
-				isBoolean );
+		return HandlerUtil.toAllGetterNames( field.getAst(), getAccessorsForField( field ), field.getName(), isBoolean );
 	}
 
 	/**
@@ -1726,8 +1743,7 @@ public class EclipseHandlerUtil
 	 */
 	public static java.util.List<String> toAllSetterNames( EclipseNode field, boolean isBoolean )
 	{
-		return HandlerUtil.toAllSetterNames( field.getAst(), getAccessorsForField( field ), field.getName(),
-				isBoolean );
+		return HandlerUtil.toAllSetterNames( field.getAst(), getAccessorsForField( field ), field.getName(), isBoolean );
 	}
 
 	/**
@@ -1749,8 +1765,7 @@ public class EclipseHandlerUtil
 	 */
 	public static java.util.List<String> toAllWitherNames( EclipseNode field, boolean isBoolean )
 	{
-		return HandlerUtil.toAllWitherNames( field.getAst(), getAccessorsForField( field ), field.getName(),
-				isBoolean );
+		return HandlerUtil.toAllWitherNames( field.getAst(), getAccessorsForField( field ), field.getName(), isBoolean );
 	}
 
 	/**
@@ -1791,8 +1806,7 @@ public class EclipseHandlerUtil
 	public static boolean filterField( FieldDeclaration declaration, boolean skipStatic )
 	{
 		// Skip the fake fields that represent enum constants.
-		if( declaration.initialization instanceof AllocationExpression
-				&& ( (AllocationExpression) declaration.initialization ).enumConstant != null )
+		if( declaration.initialization instanceof AllocationExpression && ( (AllocationExpression) declaration.initialization ).enumConstant != null )
 			return false;
 
 		if( declaration.type == null )
@@ -1912,8 +1926,7 @@ public class EclipseHandlerUtil
 						continue;
 					if( fieldName.equals( new String( fName ) ) )
 					{
-						return getGeneratedBy( def ) == null ? MemberExistsResult.EXISTS_BY_USER
-								: MemberExistsResult.EXISTS_BY_LOMBOK;
+						return getGeneratedBy( def ) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}
 		}
@@ -1947,8 +1960,7 @@ public class EclipseHandlerUtil
 	 *            as 0-*. Set to -1 to find any method with the appropriate name
 	 *            regardless of parameter count.
 	 */
-	public static MemberExistsResult methodExists( String methodName, EclipseNode node, boolean caseSensitive,
-			int params )
+	public static MemberExistsResult methodExists( String methodName, EclipseNode node, boolean caseSensitive, int params )
 	{
 		while( node != null && !( node.get() instanceof TypeDeclaration ) )
 		{
@@ -1966,8 +1978,7 @@ public class EclipseHandlerUtil
 						char[] mName = def.selector;
 						if( mName == null )
 							continue;
-						boolean nameEquals = caseSensitive ? methodName.equals( new String( mName ) )
-								: methodName.equalsIgnoreCase( new String( mName ) );
+						boolean nameEquals = caseSensitive ? methodName.equals( new String( mName ) ) : methodName.equalsIgnoreCase( new String( mName ) );
 						if( nameEquals )
 						{
 							if( params > -1 )
@@ -1995,8 +2006,7 @@ public class EclipseHandlerUtil
 							if( isTolerate( node, def ) )
 								continue top;
 
-							return getGeneratedBy( def ) == null ? MemberExistsResult.EXISTS_BY_USER
-									: MemberExistsResult.EXISTS_BY_LOMBOK;
+							return getGeneratedBy( def ) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 						}
 					}
 				}
@@ -2042,8 +2052,7 @@ public class EclipseHandlerUtil
 						if( isTolerate( node, def ) )
 							continue;
 
-						return getGeneratedBy( def ) == null ? MemberExistsResult.EXISTS_BY_USER
-								: MemberExistsResult.EXISTS_BY_LOMBOK;
+						return getGeneratedBy( def ) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}
 		}
@@ -2069,6 +2078,7 @@ public class EclipseHandlerUtil
 	 */
 	public static EclipseNode injectField( EclipseNode type, FieldDeclaration field )
 	{
+		field.annotations = addMarker( type, field, field.annotations );
 		TypeDeclaration parent = (TypeDeclaration) type.get();
 
 		if( parent.fields == null )
@@ -2107,8 +2117,7 @@ public class EclipseHandlerUtil
 
 	public static boolean isEnumConstant( final FieldDeclaration field )
 	{
-		return( ( field.initialization instanceof AllocationExpression )
-				&& ( ( (AllocationExpression) field.initialization ).enumConstant == field ) );
+		return( ( field.initialization instanceof AllocationExpression ) && ( ( (AllocationExpression) field.initialization ).enumConstant == field ) );
 	}
 
 	/**
@@ -2132,17 +2141,14 @@ public class EclipseHandlerUtil
 			{
 				for( int i = 0; i < parent.methods.length; i++ )
 				{
-					if( parent.methods[i] instanceof ConstructorDeclaration
-							&& ( parent.methods[i].bits & ASTNode.IsDefaultConstructor ) != 0 )
+					if( parent.methods[i] instanceof ConstructorDeclaration && ( parent.methods[i].bits & ASTNode.IsDefaultConstructor ) != 0 )
 					{
 						EclipseNode tossMe = type.getNodeFor( parent.methods[i] );
 
-						AbstractMethodDeclaration[] withoutGeneratedConstructor = new AbstractMethodDeclaration[parent.methods.length
-								- 1];
+						AbstractMethodDeclaration[] withoutGeneratedConstructor = new AbstractMethodDeclaration[parent.methods.length - 1];
 
 						System.arraycopy( parent.methods, 0, withoutGeneratedConstructor, 0, i );
-						System.arraycopy( parent.methods, i + 1, withoutGeneratedConstructor, i,
-								parent.methods.length - i - 1 );
+						System.arraycopy( parent.methods, i + 1, withoutGeneratedConstructor, i, parent.methods.length - i - 1 );
 
 						parent.methods = withoutGeneratedConstructor;
 						if( tossMe != null )
@@ -2197,26 +2203,28 @@ public class EclipseHandlerUtil
 	private static final char[] JUSTIFICATION = "justification".toCharArray();
 	private static final char[] GENERATED_CODE = "generated code".toCharArray();
 	private static final char[] LOMBOK = "lombok".toCharArray();
-	private static final char[][] JAVAX_ANNOTATION_GENERATED = Eclipse
-			.fromQualifiedName( "javax.annotation.Generated" );
+	private static final char[][] JAVAX_ANNOTATION_GENERATED = Eclipse.fromQualifiedName( "javax.annotation.Generated" );
 	private static final char[][] LOMBOK_GENERATED = Eclipse.fromQualifiedName( "lombok.Generated" );
 	private static final char[][] EDU_UMD_CS_FINDBUGS_ANNOTATIONS_SUPPRESSFBWARNINGS = Eclipse
 			.fromQualifiedName( "edu.umd.cs.findbugs.annotations.SuppressFBWarnings" );
 
-	public static Annotation[] addSuppressWarningsAll( EclipseNode node, ASTNode source,
-			Annotation[] originalAnnotationArray )
+	public static Annotation[] addSuppressWarningsAll( EclipseNode node, ASTNode source, Annotation[] originalAnnotationArray )
 	{
-		Annotation[] anns = addAnnotation( source, originalAnnotationArray, TypeConstants.JAVA_LANG_SUPPRESSWARNINGS,
-				new StringLiteral( ALL, 0, 0, 0 ) );
+		Annotation[] anns = addAnnotation( source, originalAnnotationArray, TypeConstants.JAVA_LANG_SUPPRESSWARNINGS, new StringLiteral( ALL, 0, 0, 0 ) );
 
-		if( Boolean.TRUE.equals(
-				node.getAst().readConfiguration( ConfigurationKeys.ADD_FINDBUGS_SUPPRESSWARNINGS_ANNOTATIONS ) ) )
+		if( Boolean.TRUE.equals( node.getAst().readConfiguration( ConfigurationKeys.ADD_FINDBUGS_SUPPRESSWARNINGS_ANNOTATIONS ) ) )
 		{
-			MemberValuePair mvp = new MemberValuePair( JUSTIFICATION, 0, 0,
-					new StringLiteral( GENERATED_CODE, 0, 0, 0 ) );
+			MemberValuePair mvp = new MemberValuePair( JUSTIFICATION, 0, 0, new StringLiteral( GENERATED_CODE, 0, 0, 0 ) );
 			anns = addAnnotation( source, anns, EDU_UMD_CS_FINDBUGS_ANNOTATIONS_SUPPRESSFBWARNINGS, mvp );
 		}
 
+		return anns;
+	}
+
+	public static Annotation[] addMarker( EclipseNode node, ASTNode source, Annotation[] originalAnnotationArray )
+	{
+		Annotation[] anns = addAnnotation( source, originalAnnotationArray, Eclipse.fromQualifiedName( "lombok.experimental.jpa.entity.LombokMarker" ),
+				new StringLiteral( ALL, 0, 0, 0 ) );
 		return anns;
 	}
 
@@ -2227,16 +2235,14 @@ public class EclipseHandlerUtil
 		{
 			result = addAnnotation( source, result, JAVAX_ANNOTATION_GENERATED, new StringLiteral( LOMBOK, 0, 0, 0 ) );
 		}
-		if( Boolean.TRUE
-				.equals( node.getAst().readConfiguration( ConfigurationKeys.ADD_LOMBOK_GENERATED_ANNOTATIONS ) ) )
+		if( Boolean.TRUE.equals( node.getAst().readConfiguration( ConfigurationKeys.ADD_LOMBOK_GENERATED_ANNOTATIONS ) ) )
 		{
 			result = addAnnotation( source, result, LOMBOK_GENERATED, null );
 		}
 		return result;
 	}
 
-	private static Annotation[] addAnnotation( ASTNode source, Annotation[] originalAnnotationArray,
-			char[][] annotationTypeFqn, ASTNode arg )
+	private static Annotation[] addAnnotation( ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn, ASTNode arg )
 	{
 		char[] simpleName = annotationTypeFqn[annotationTypeFqn.length - 1];
 
@@ -2313,8 +2319,7 @@ public class EclipseHandlerUtil
 	 */
 	public static Statement generateNullCheck( AbstractVariableDeclaration variable, EclipseNode sourceNode )
 	{
-		NullCheckExceptionType exceptionType = sourceNode.getAst()
-				.readConfiguration( ConfigurationKeys.NON_NULL_EXCEPTION_TYPE );
+		NullCheckExceptionType exceptionType = sourceNode.getAst().readConfiguration( ConfigurationKeys.NON_NULL_EXCEPTION_TYPE );
 		if( exceptionType == null )
 			exceptionType = NullCheckExceptionType.NULL_POINTER_EXCEPTION;
 
@@ -2336,8 +2341,8 @@ public class EclipseHandlerUtil
 		Arrays.fill( ps, 0L );
 		exception.type = new QualifiedTypeReference( fromQualifiedName( exceptionTypeStr ), ps );
 		setGeneratedBy( exception.type, source );
-		exception.arguments = new Expression[] { new StringLiteral(
-				exceptionType.toExceptionMessage( new String( variable.name ) ).toCharArray(), pS, pE, 0 ) };
+		exception.arguments = new Expression[] {
+				new StringLiteral( exceptionType.toExceptionMessage( new String( variable.name ) ).toCharArray(), pS, pE, 0 ) };
 		setGeneratedBy( exception.arguments[0], source );
 		ThrowStatement throwStatement = new ThrowStatement( exception, pS, pE );
 		setGeneratedBy( throwStatement, source );
@@ -2379,8 +2384,7 @@ public class EclipseHandlerUtil
 	 * Given a list of field names and a node referring to a type, finds each
 	 * name in the list that does not match a field within the type.
 	 */
-	public static List<Integer> createListOfNonExistentFields( List<String> list, EclipseNode type,
-			boolean excludeStandard, boolean excludeTransient )
+	public static List<Integer> createListOfNonExistentFields( List<String> list, EclipseNode type, boolean excludeStandard, boolean excludeTransient )
 	{
 		boolean[] matched = new boolean[list.size()];
 
@@ -2397,8 +2401,7 @@ public class EclipseHandlerUtil
 				if( child.getName().startsWith( "$" ) )
 					continue;
 			}
-			if( excludeTransient
-					&& ( ( (FieldDeclaration) child.get() ).modifiers & ClassFileConstants.AccTransient ) != 0 )
+			if( excludeTransient && ( ( (FieldDeclaration) child.get() ).modifiers & ClassFileConstants.AccTransient ) != 0 )
 				continue;
 			int idx = list.indexOf( child.getName() );
 			if( idx > -1 )
@@ -2456,8 +2459,7 @@ public class EclipseHandlerUtil
 					QualifiedTypeReference qtr = (QualifiedTypeReference) castTo;
 					// Same here, but for the more complex types, they stay
 					// types.
-					castToConverted = new QualifiedNameReference( qtr.tokens, copy( qtr.sourcePositions ),
-							qtr.sourceStart, qtr.sourceEnd );
+					castToConverted = new QualifiedNameReference( qtr.tokens, copy( qtr.sourcePositions ), qtr.sourceStart, qtr.sourceEnd );
 					castToConverted.bits = ( castToConverted.bits & ~Binding.VARIABLE ) | Binding.TYPE;
 					setGeneratedBy( castToConverted, source );
 				}
@@ -2503,8 +2505,7 @@ public class EclipseHandlerUtil
 		Constructor<CastExpression> castExpressionConstructor_ = (Constructor<CastExpression>) constructor;
 		castExpressionConstructor = castExpressionConstructor_;
 
-		castExpressionConstructorIsTypeRefBased = ( castExpressionConstructor
-				.getParameterTypes()[1] == TypeReference.class );
+		castExpressionConstructorIsTypeRefBased = ( castExpressionConstructor.getParameterTypes()[1] == TypeReference.class );
 	}
 
 	/**
@@ -2595,8 +2596,7 @@ public class EclipseHandlerUtil
 		}
 	}
 
-	public static List<Annotation> unboxAndRemoveAnnotationParameter( Annotation annotation, String annotationName,
-			String errorName, EclipseNode errorNode )
+	public static List<Annotation> unboxAndRemoveAnnotationParameter( Annotation annotation, String annotationName, String errorName, EclipseNode errorNode )
 	{
 		if( "value".equals( annotationName ) )
 		{
@@ -2609,8 +2609,7 @@ public class EclipseHandlerUtil
 			// don't need that at the time of writing this method; we only unbox
 			// onMethod, onParameter
 			// and onConstructor. Let's exit early and very obviously:
-			throw new UnsupportedOperationException(
-					"Lombok cannot unbox 'value' from SingleMemberAnnotation at this time." );
+			throw new UnsupportedOperationException( "Lombok cannot unbox 'value' from SingleMemberAnnotation at this time." );
 		}
 		if( !NormalAnnotation.class.equals( annotation.getClass() ) )
 		{
@@ -2679,8 +2678,7 @@ public class EclipseHandlerUtil
 			else
 			{
 				Annotation atDummyIdentifier = (Annotation) value;
-				if( atDummyIdentifier.type instanceof SingleTypeReference
-						&& isAllValidOnXCharacters( ( (SingleTypeReference) atDummyIdentifier.type ).token ) )
+				if( atDummyIdentifier.type instanceof SingleTypeReference && isAllValidOnXCharacters( ( (SingleTypeReference) atDummyIdentifier.type ).token ) )
 				{
 					if( atDummyIdentifier instanceof MarkerAnnotation )
 					{
