@@ -23,11 +23,12 @@ import lombok.eclipse.handlers.HandleSetter;
 import lombok.eclipse.handlers.generators.AnnotationGenerator;
 import lombok.eclipse.handlers.generators.FieldGenerator;
 import lombok.eclipse.handlers.generators.MemberValuePairGenerator;
+import lombok.experimental.jpa.LombokOneToMany;
 import lombok.experimental.jpa.entity.IDGenerator;
 import lombok.experimental.jpa.entity.LombokJpaEntity;
 
 @ProviderFor( EclipseAnnotationHandler.class )
-public class HandleJpaEntity extends EclipseAnnotationHandler<LombokJpaEntity>
+public class HandleOneToMany extends EclipseAnnotationHandler<LombokOneToMany>
 {
 	private HandleGetter getterHandler = new HandleGetter();
 	private HandleSetter setterHandler = new HandleSetter();
@@ -37,24 +38,30 @@ public class HandleJpaEntity extends EclipseAnnotationHandler<LombokJpaEntity>
 	private FieldGenerator fieldGen = FieldGenerator.instance();
 		
 	@Override
-	public void handle( AnnotationValues<LombokJpaEntity> annotation, Annotation ast, EclipseNode annotationNode )
+	public void handle( AnnotationValues<LombokOneToMany> annotation, Annotation ast, EclipseNode annotationNode )
 	{
-		EclipseNode typeNode = EclipseHandlerUtil.upToTypeNode( annotationNode );
-		TypeDeclaration typeDecl = (TypeDeclaration) typeNode.get();
-		annotationGen.createAnnotation( typeDecl, LombokJpaEntity.ENTITY );
+		EclipseNode fieldNode = EclipseHandlerUtil.upToFieldNode( annotationNode );
+		FieldDeclaration fieldDecl = (FieldDeclaration) fieldNode.get();
+		LombokOneToMany a = annotation.getInstance();
+
+		annotationGen.createAnnotation( fieldDecl, LombokOneToMany.ONE_TO_MANY );
 		
-		LombokJpaEntity a = annotation.getInstance();
-		// add ID field
-		EclipseNode idNode = addIDField( ast, annotationNode, typeNode, a );		
-		// add field private Integer <version>
-		EclipseNode versionNode = addVersionField( ast, annotationNode, typeNode, a );
-		//addTableAnnotation( ast, a, typeDecl );
+		if( a.bidirectional() )
+		{
+			// add utility methods
+		}
+		else
+		{
+			// add joinColumn annotation
+		}
+		
+
 
 		
-		getterHandler.createGetterForField( AccessLevel.PUBLIC, idNode, annotationNode, ast, true, false, new ArrayList<Annotation>() );
+		/*getterHandler.createGetterForField( AccessLevel.PUBLIC, idNode, annotationNode, ast, true, false, new ArrayList<Annotation>() );
 		setterHandler.createSetterForField( AccessLevel.PUBLIC, idNode, annotationNode, true, new ArrayList<Annotation>(), new ArrayList<Annotation>() );
 		getterHandler.createGetterForField( AccessLevel.PUBLIC, versionNode, annotationNode, ast, true, false, new ArrayList<Annotation>() );
-		setterHandler.createSetterForField( AccessLevel.PUBLIC, versionNode, annotationNode, true, new ArrayList<Annotation>(), new ArrayList<Annotation>() );
+		setterHandler.createSetterForField( AccessLevel.PUBLIC, versionNode, annotationNode, true, new ArrayList<Annotation>(), new ArrayList<Annotation>() );*/
 		
 	}
 

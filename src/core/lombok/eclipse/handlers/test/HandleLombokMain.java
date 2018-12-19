@@ -3,7 +3,6 @@ package lombok.eclipse.handlers.test;
 import java.util.logging.Logger;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
-import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.NormalAnnotation;
 import org.mangosdk.spi.ProviderFor;
 
@@ -23,6 +22,7 @@ public class HandleLombokMain extends EclipseAnnotationHandler<MainAnnotation>
 	public void handle( AnnotationValues<MainAnnotation> annotation, Annotation ast, EclipseNode annotationNode )
 	{
 		LOG.fine("HandleLombokMain enter");
+		LOG.fine( annotation.getNode().get().toString() );
 		for( String key : annotation.getValues().keySet() )
 		{
 			LOG.fine( key );
@@ -52,7 +52,10 @@ public class HandleLombokMain extends EclipseAnnotationHandler<MainAnnotation>
 		LOG.fine("before subs");
 		SubAnnotation[] sub = main.subs();
 		LOG.fine("after subs");
-		LOG.fine( annotation.getNode().get().toString() );
+		for( int i = 0; i < sub.length; i++ )
+		{
+			LOG.fine( "sub " + sub[i].name() + " "   + sub[i].value() );
+		}
 		LOG.fine("HandleLombokMain exit");
 	}
 

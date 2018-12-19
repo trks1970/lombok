@@ -121,14 +121,13 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 
-import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 
 /**
  * Container for static utility methods useful to handlers written for eclipse.
  */
 public class EclipseHandlerUtil
 {
-	private static final Logger LOG = LombokLogger.getConsoleLogger();
+	private static final Logger LOG = LombokLogger.getLogger();
 
 	private EclipseHandlerUtil()
 	{
@@ -1273,7 +1272,7 @@ public class EclipseHandlerUtil
 	 */
 	public static <A extends java.lang.annotation.Annotation> AnnotationValues<A> createAnnotation( Class<A> type, /*final Annotation annotation,*/ final EclipseNode annotationNode )
 	{
-		LOG.fine( ">>> createAnnotation enter" );
+		LOG.fine( ">>> createAnnotation enter, type " + type.getName() );
 		final Annotation annotation = (Annotation) annotationNode.get();
 		Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
 
@@ -1317,7 +1316,35 @@ public class EclipseHandlerUtil
 						LOG.fine( "ex is " + ex.getClass().getName() );
 						if( ex instanceof Annotation )
 						{
-							guesses.add( createAnnotation( type, (Annotation)ex, annotationNode ) );
+							Annotation ann = (Annotation)ex;
+							NormalAnnotation na = (NormalAnnotation)ann;
+							TypeBinding rt = na.resolvedType;
+							LOG.fine( "typeNameArray " + ann.type.getTypeName() );
+							LOG.fine( "typeName "+ Eclipse.toQualifiedName( ann.type.getTypeName() ) );
+							TypeBinding tb = ann.resolvedType;
+							if( tb != null )
+							{
+								LOG.fine( "tb readableName " + String.valueOf( tb.readableName() ) );
+								LOG.fine( "tb packageName " + String.valueOf( tb.qualifiedPackageName() ) );
+							}
+							else
+							{
+								LOG.fine( "tb is null" );
+							}
+							TypeBinding tbType = ann.type.resolvedType;
+							if( tbType != null )
+							{
+								LOG.fine( "tbType readableName " + String.valueOf( tbType.readableName() ) );
+								LOG.fine( "tb packageName " + String.valueOf( tbType.qualifiedPackageName() ) );
+							}
+							else
+							{
+								LOG.fine( "tbType is null" );
+							}
+
+							// LOG.fine( "compundNameArray " + tb.actualType().compoundName );
+							// LOG.fine( "compundName " + Eclipse.toQualifiedName( tb.actualType().compoundName ) );
+							
 						}
 						else
 						{
@@ -1327,7 +1354,6 @@ public class EclipseHandlerUtil
 				}
 				else if( rhs != null )
 				{
-					LOG.fine( "Expression " + rhs );
 					expressions = new Expression[] { rhs };
 					for( Expression ex : expressions )
 					{
@@ -1335,7 +1361,6 @@ public class EclipseHandlerUtil
 						ex.print( 0, sb );
 						raws.add( sb.toString() );
 						expressionValues.add( ex );
-						LOG.info( "calculateValue " + calculateValue( ex ) );
 						guesses.add( calculateValue( ex ) );
 					}
 				}*/
@@ -1356,7 +1381,6 @@ public class EclipseHandlerUtil
 
 						int sourceStart = ex.sourceStart;
 						int sourceEnd = ex.sourceEnd;
-						LOG.fine( "Adding error" + message + " " + ex );
 						annotationNode.addError( message, sourceStart, sourceEnd );
 					}
 
@@ -1374,7 +1398,6 @@ public class EclipseHandlerUtil
 
 						int sourceStart = ex.sourceStart;
 						int sourceEnd = ex.sourceEnd;
-						LOG.fine( "Adding warning " + message + " " + ex );
 						annotationNode.addWarning( message, sourceStart, sourceEnd );
 					}
 				} );
@@ -1899,6 +1922,15 @@ public class EclipseHandlerUtil
 		if( node == null )
 			throw new NullPointerException( "node" );
 		while( node != null && !( node.get() instanceof TypeDeclaration ) )
+			node = node.up();
+		return node;
+	}
+
+	public static EclipseNode upToFieldNode( EclipseNode node )
+	{
+		if( node == null )
+			throw new NullPointerException( "node" );
+		while( node != null && !( node.get() instanceof FieldDeclaration ) )
 			node = node.up();
 		return node;
 	}

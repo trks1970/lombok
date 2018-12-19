@@ -40,10 +40,10 @@ public @interface LombokJpaEntity
 	String versionField() default "version";
 	FieldType versionType() default FieldType.INTEGER;
 	
-	String table() default "";
+	/*String table() default "";
 	String catalog() default "";
 	String schema() default "";
-	Idx[] indexes() default {};
+	Idx[] indexes() default {};*/
 	
 	
 }

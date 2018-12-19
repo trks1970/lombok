@@ -10,7 +10,6 @@ import org.eclipse.jdt.internal.compiler.ast.NormalAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -55,13 +54,13 @@ public class HandleJpaEntityTest
 		when( idx2.unique() ).thenReturn( false );
 		when( idx2.columns() ).thenReturn( "a, b" );
 
-		when( a.table() ).thenReturn( "aTable" );
+		/*when( a.table() ).thenReturn( "aTable" );
 		when( a.catalog() ).thenReturn( "aCatalog" );
 		when( a.schema() ).thenReturn( "aSchema" );
-		when( a.indexes() ).thenReturn( new Idx[] { idx1, idx2 } );
+		when( a.indexes() ).thenReturn( new Idx[] { idx1, idx2 } );*/
 	}
 
-	@Test
+	/*@Test
 	public void testAddTableAnnotation()
 	{
 		handler.addTableAnnotation( source, a, typeDecl );
@@ -69,6 +68,6 @@ public class HandleJpaEntityTest
 		{
 			System.out.println( typeDecl.annotations[i] );
 		}
-	}
+	}*/
 
 }

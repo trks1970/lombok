@@ -7,7 +7,6 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 
@@ -22,10 +21,8 @@ import lombok.experimental.jpa.entity.IDGenerator;
 import lombok.experimental.jpa.entity.LombokJpaEntity;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
-import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.HandleGetter;
 import lombok.javac.handlers.HandleSetter;
-import lombok.javac.handlers.JavacHandlerUtil;
 
 /**
  * Handles the {@code lombok.experimental.SequencedEntity} annotation for javac.
@@ -57,7 +54,7 @@ public class HandleJpaEntity extends JavacAnnotationHandler<LombokJpaEntity>
 		JavacNode versionNode = addVersionField( ast, annotationNode, typeNode, a );
 
 		// add Table annotation		
-		addTableAnnotation( typeNode, typeDecl, a );
+		//addTableAnnotation( typeNode, typeDecl, a );
 		
 		// add getter and setter for id and version
 		getterHandler.createGetterForField(AccessLevel.PUBLIC, idNode, annotationNode, true, false, List.<JCAnnotation> nil() );
@@ -67,7 +64,7 @@ public class HandleJpaEntity extends JavacAnnotationHandler<LombokJpaEntity>
 		
 	}
 
-	private void addTableAnnotation( JavacNode typeNode, JCClassDecl typeDecl, LombokJpaEntity a )
+	/*private void addTableAnnotation( JavacNode typeNode, JCClassDecl typeDecl, LombokJpaEntity a )
 	{
 		List<JCExpression> tableArgs = List.<JCExpression> nil();
 		if( !a.table().isEmpty() )
@@ -111,7 +108,7 @@ public class HandleJpaEntity extends JavacAnnotationHandler<LombokJpaEntity>
 		{
 			annGen.addAnnotation( typeDecl, typeNode, "javax.persistence.Table", tableArgs );
 		}
-	}
+	}*/
 
 	private JavacNode addVersionField(JCAnnotation source, JavacNode annotationNode, JavacNode typeNode, LombokJpaEntity a)
 	{
