@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import lombok.core.AST.Kind;
 import lombok.permit.Permit;
@@ -46,8 +45,6 @@ import lombok.permit.Permit;
  */
 public class AnnotationValues<A extends Annotation>
 {
-	private static final Logger LOG = LombokLogger.getConsoleLogger();
-	
 	private final Class<A> type;
 	private final Map<String, AnnotationValue> values;
 	private final LombokNode<?, ?, ?> ast;
@@ -96,19 +93,11 @@ public class AnnotationValues<A extends Annotation>
 		 */
 		public AnnotationValue( LombokNode<?, ?, ?> node, List<String> raws, List<Object> expressions, List<Object> valueGuesses, boolean isExplicit )
 		{
-			LOG.fine( ">>> AnnotationValue CTOR enter, node " + node );
 			this.node = node;
 			this.raws = raws;
 			this.expressions = expressions;
 			this.valueGuesses = valueGuesses;
 			this.isExplicit = isExplicit;
-			for( int i = 0; i < raws.size(); i++ )
-			{
-				LOG.fine( "raw " + raws.get( i ) + 
-					" expr " + (i < expressions.size() ? expressions.get( i ) : "null") + 
-					" guess " + (i < valueGuesses.size() ? valueGuesses.get( i ) : "null" ) );
-			}
-			LOG.fine( "<<< AnnotationValue CTOR exit" );
 		}
 
 		/**
@@ -173,15 +162,9 @@ public class AnnotationValues<A extends Annotation>
 	 */
 	public AnnotationValues( Class<A> type, Map<String, AnnotationValue> values, LombokNode<?, ?, ?> ast )
 	{
-		LOG.fine( ">>> AnnotationValues CTOR enter, type " + type.getName() );
 		this.type = type;
 		this.values = values;
 		this.ast = ast;
-		for( String key : values.keySet() )
-		{
-			LOG.fine( key + " -> " + values.get( key ) );
-		}
-		LOG.fine( "<<< AnnotationValues CTOR exit" );
 	}
 
 	public static <A extends Annotation> AnnotationValues<A> of( Class<A> type )
@@ -320,31 +303,20 @@ public class AnnotationValues<A extends Annotation>
 	@SuppressWarnings( "unchecked" )
 	public A getInstance()
 	{
-		LombokLogger.getLogger().fine( ">>> getInstance enter, type" + type.getName() );
 		if( cachedInstance != null )
 		{
-			LombokLogger.getLogger().fine( "<<< Returning cached instance" );
 			return cachedInstance;
 		}
 		InvocationHandler invocations = new InvocationHandler()
 		{
 			public Object invoke( Object proxy, Method method, Object[] args ) throws Throwable
 			{
-				LombokLogger.getLogger().fine( ">>> Invoking method " + method.getName() );
 				AnnotationValue v = values.get( method.getName() );
-				LombokLogger.getLogger().fine( "AnnotationValue " + v );
 				if( v == null )
-				{
-					LOG.fine( "Values:" );
-					for( String key : values.keySet() )
-					{
-						LOG.fine( key + " : " + values.get( key ) );
-					}
-					
+				{					
 					Object defaultValue = method.getDefaultValue();
 					if( defaultValue != null )
 					{
-						LombokLogger.getLogger().fine( "<<< returning defaultValue " + defaultValue );
 						return defaultValue;
 					}
 					throw makeNoDefaultFail( v, method );
@@ -352,14 +324,11 @@ public class AnnotationValues<A extends Annotation>
 
 				boolean isArray = false;
 				Class<?> expected = method.getReturnType();
-				LOG.fine( "expected " + method.getReturnType() );
 				Object array = null;
 				if( expected.isArray() )
 				{
-					LOG.fine( "array expected" );
 					isArray = true;
 					expected = expected.getComponentType();
-					LOG.fine( "expected componentType " + method.getReturnType() );
 					array = Array.newInstance( expected, v.valueGuesses.size() );
 				}
 
@@ -373,46 +342,33 @@ public class AnnotationValues<A extends Annotation>
 					Object defaultValue = method.getDefaultValue();
 					if( defaultValue == null )
 						throw makeNoDefaultFail( v, method );
-					LombokLogger.getLogger().fine( "<<< returning defaultValue " + defaultValue );
 					return defaultValue;
 				}
 
 				int idx = 0;
-				LOG.fine( "iterating guesses, isArray " + isArray );
+
 				for( Object guess : v.valueGuesses )
 				{
-					LOG.fine( "guess " + guess );
 					Object result = guess == null ? null : guessToType( guess, expected, v, idx );
 					if( !isArray )
 					{
-						LOG.fine( "not an array" );
 						if( result == null )
 						{
 							Object defaultValue = method.getDefaultValue();
 							if( defaultValue == null )
 								throw makeNoDefaultFail( v, method );
-							LOG.fine( "<<< returning defaultValue " + defaultValue );
 							return defaultValue;
 						}
-						LombokLogger.getLogger().fine( "<<< getInstance exit, result " + result );
 						return result;
 					}
 					if( result == null )
 					{
-						LOG.fine( "guessToType result null" );
 						if( v.valueGuesses.size() == 1 )
 						{
 							Object defaultValue = method.getDefaultValue();
 							if( defaultValue == null )
 								throw makeNoDefaultFail( v, method );
-							LOG.fine( "<<< returning defaultValue " + defaultValue );
 							return defaultValue;
-						}
-						LombokLogger.getLogger().fine( "*** Unable to guess annotation, preparing exception" );
-						LombokLogger.getLogger().fine( "valueGuesses size " + v.valueGuesses.size() );
-						for( Object valueGuess : v.valueGuesses )
-						{
-							LombokLogger.getLogger().fine( "valueGuess " + valueGuess );
 						}
 						throw new AnnotationValueDecodeFail( v,
 								"LOMBOK AnnotationValues.getInstance() I can't make sense of this annotation value. Try using a fully qualified literal. ",
@@ -431,13 +387,10 @@ public class AnnotationValues<A extends Annotation>
 
 	private Object guessToType( Object guess, Class<?> expected, AnnotationValue v, int pos )
 	{
-		LOG.fine( "guessToType enter guess: " + guess.getClass().getName() + " expected " + expected + " AnnotationValue " + v );
 		if( expected == int.class || expected == Integer.class )
 		{
-			LOG.fine( "Integer expected" );
 			if( guess instanceof Integer || guess instanceof Short || guess instanceof Byte )
 			{
-				LOG.fine( "guessToType exit intValue" );
 				return ( (Number) guess ).intValue();
 			}
 		}
@@ -446,7 +399,6 @@ public class AnnotationValues<A extends Annotation>
 		{
 			if( guess instanceof Long || guess instanceof Integer || guess instanceof Short || guess instanceof Byte )
 			{
-				LOG.fine( "guessToType exit longValue" );
 				return ( (Number) guess ).longValue();
 			}
 		}
@@ -459,7 +411,6 @@ public class AnnotationValues<A extends Annotation>
 				int shortVal = ( (Number) guess ).shortValue();
 				if( shortVal == intVal )
 				{
-					LOG.fine( "guessToType exit shortValue" );
 					return shortVal;
 				}
 			}
@@ -473,7 +424,6 @@ public class AnnotationValues<A extends Annotation>
 				int byteVal = ( (Number) guess ).byteValue();
 				if( byteVal == intVal )
 				{
-					LOG.fine( "guessToType exit byteValue" );
 					return byteVal;
 				}
 			}
@@ -483,7 +433,6 @@ public class AnnotationValues<A extends Annotation>
 		{
 			if( guess instanceof Number )
 			{
-				LOG.fine( "guessToType exit doubleValue" );
 				return ( (Number) guess ).doubleValue();
 			}
 		}
@@ -492,7 +441,6 @@ public class AnnotationValues<A extends Annotation>
 		{
 			if( guess instanceof Number )
 			{
-				LOG.fine( "guessToType exit floatValue" );
 				return ( (Number) guess ).floatValue();
 			}
 		}
@@ -501,7 +449,6 @@ public class AnnotationValues<A extends Annotation>
 		{
 			if( guess instanceof Boolean )
 			{
-				LOG.fine( "guessToType exit booleanValue" );
 				return ( (Boolean) guess ).booleanValue();
 			}
 				
@@ -511,17 +458,14 @@ public class AnnotationValues<A extends Annotation>
 		{
 			if( guess instanceof Character )
 			{
-				LOG.fine( "guessToType exit charValue" );
 				return ( (Character) guess ).charValue();
 			}
 		}
 
 		if( expected == String.class )
 		{
-			LOG.fine( "String expected" );
 			if( guess instanceof String )
 			{
-				LOG.fine( "guessToType exit stringValue" );
 				return guess;
 			}
 		}
@@ -536,7 +480,6 @@ public class AnnotationValues<A extends Annotation>
 					String target = ( (Enum<?>) enumConstant ).name();
 					if( target.equals( fieldSel ) )
 					{
-						LOG.fine( "guessToType exit enumConstant" );
 						return enumConstant;
 					}
 				}
@@ -546,15 +489,11 @@ public class AnnotationValues<A extends Annotation>
 
 		if( expected == Class.class )
 		{
-			LOG.fine( "Class expected" );
 			String classLit = ( (ClassLiteral) guess ).getClassName();
-			LOG.fine( "classLiteral " + classLit );
 			if( guess instanceof ClassLiteral )
 			{
-				LOG.fine( "guess is ClassLiteral" );
 				try
 				{
-					LOG.fine( "guessToType exit classLiteral" );
 					return Class.forName( toFQ( classLit ) );
 				}
 				catch( ClassNotFoundException e )
@@ -562,15 +501,10 @@ public class AnnotationValues<A extends Annotation>
 					throw new AnnotationValueDecodeFail( v, "Can't translate " + classLit + "<" + guess + ">" + " to a class object.", pos );
 				}
 			}
-			else
-			{
-				LOG.fine( "Omitting class, guess was " + guess.getClass().getName() );
-			}
 		}
 
 		if( guess instanceof AnnotationValues )
 		{
-			LOG.fine( "guessToType exit AnnotationValues" );
 			return ( (AnnotationValues<?>) guess ).getInstance();
 		}
 

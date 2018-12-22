@@ -42,7 +42,7 @@ public class AnnotationGeneratorTest
 		List<ASTNode> indexArgs = new ArrayList<ASTNode>();
 		indexArgs = mvpGen.addStringParameter( "name", "test1", indexArgs );
 		indexArgs = mvpGen.addStringParameter( "columns", "a, b, c", indexArgs );
-		indexArgs = mvpGen.addBooleanAttribute( "unique", true, indexArgs );
+		indexArgs = mvpGen.addBooleanParameter( "unique", true, indexArgs );
 		Annotation annotation = annotationGen.doCreateAnnotation( source, "javax.persistence.Index", indexArgs );
 		Assert.assertEquals( "@javax.persistence.Index(name = \"test1\",columns = \"a, b, c\",unique = true)", annotation.toString( ) );
 	}

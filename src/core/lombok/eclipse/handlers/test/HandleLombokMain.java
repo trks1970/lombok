@@ -7,8 +7,8 @@ import org.eclipse.jdt.internal.compiler.ast.NormalAnnotation;
 import org.mangosdk.spi.ProviderFor;
 
 import lombok.core.AnnotationValues;
-import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.LombokLogger;
+import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.test.MainAnnotation;

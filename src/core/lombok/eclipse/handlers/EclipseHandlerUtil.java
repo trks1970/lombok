@@ -46,8 +46,8 @@ import lombok.Getter;
 import lombok.Lombok;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.LombokLogger;
+import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.configuration.TypeName;
@@ -1281,7 +1281,7 @@ public class EclipseHandlerUtil
 		if( memberValuePairs != null )
 			for( final MemberValuePair pair : memberValuePairs )
 			{
-				LOG.fine( "pair " + pair );
+				LOG.fine( "processing memberValuePair " + pair );
 				List<String> raws = new ArrayList<String>();
 				List<Object> expressionValues = new ArrayList<Object>();
 				List<Object> guesses = new ArrayList<Object>();
@@ -1427,7 +1427,9 @@ public class EclipseHandlerUtil
 			}
 		}
 
-		return new AnnotationValues<A>( type, values, annotationNode );
+		AnnotationValues<A> aV = new AnnotationValues<A>( type, values, annotationNode );
+		LOG.fine("createAnnotation exit, AnnotationValues " + aV);
+		return aV;
 	}
 
 	/**

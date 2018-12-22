@@ -1,4 +1,4 @@
-package lombok.experimental.jpa;
+package lombok.experimental.jpa.entity;
 
 public enum Fetch
 {

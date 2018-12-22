@@ -1,5 +1,6 @@
 package lombok.eclipse.handlers.generators;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -17,7 +18,7 @@ import org.eclipse.jdt.internal.compiler.ast.TrueLiteral;
 public class MemberValuePairGenerator
 {
 	private static final MemberValuePairGenerator instance = new MemberValuePairGenerator();
-	protected static final long[] NULL_POSS = {0L};
+	public static final long[] NULL_POSS = {0L};
 	
 	private MemberValuePairGenerator() {}
 	
@@ -47,10 +48,22 @@ public class MemberValuePairGenerator
 				new QualifiedNameReference( fromQualifiedName(nameFQN), NULL_POSS, 0, 0 ) );
 	}
 
-	public MemberValuePair createArrayParameter( String attribute, List<Annotation> values )
+	public MemberValuePair createAnnotationArray( String attribute, List<Annotation> values )
 	{
 		ArrayInitializer initializer = new ArrayInitializer();
 		initializer.expressions = values.toArray( new Expression[values.size()] );
+		return new MemberValuePair( attribute.toCharArray(), 0, 0, initializer );
+	}
+
+	public MemberValuePair createNameReferenceArray( String attribute, List<String> fqnNames )
+	{
+		ArrayInitializer initializer = new ArrayInitializer();
+		List<QualifiedNameReference> references = new ArrayList<QualifiedNameReference>();
+		for( String nameFQN : fqnNames )
+		{
+			references.add( new QualifiedNameReference( fromQualifiedName(nameFQN), NULL_POSS, 0, 0 ) );
+		}
+		initializer.expressions = references.toArray( new Expression[references.size()] );
 		return new MemberValuePair( attribute.toCharArray(), 0, 0, initializer );
 	}
 
@@ -60,15 +73,21 @@ public class MemberValuePairGenerator
 		return argList;
 	}
 
-	public List<ASTNode> addBooleanAttribute( String attribute, boolean value, List<ASTNode> argList )
+	public List<ASTNode> addBooleanParameter( String attribute, boolean value, List<ASTNode> argList )
 	{
 		argList.add( createBooleanParameter( attribute, value ) );
 		return argList;
 	}
 
-	public List<ASTNode> addArrayParameter( String attribute, List<Annotation> values, List<ASTNode> argList )
+	public List<ASTNode> addAnnotationArray( String attribute, List<Annotation> values, List<ASTNode> argList )
 	{
-		argList.add( createArrayParameter( attribute, values ) );
+		argList.add( createAnnotationArray( attribute, values ) );
+		return argList;
+	}
+
+	public List<ASTNode> addNameReferenceArray( String attribute, List<String> fqnValues, List<ASTNode> argList )
+	{
+		argList.add( createNameReferenceArray( attribute, fqnValues ) );
 		return argList;
 	}
 
@@ -83,6 +102,7 @@ public class MemberValuePairGenerator
 		argList.add( createNameReference( attribute, type ) );
 		return argList;
 	}
+	
 
 	public char[][] fromQualifiedName(String typeName) {
 		String[] split = Pattern.compile("\\.").split(typeName);
