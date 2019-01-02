@@ -42,6 +42,7 @@ import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.Literal;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TryStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
@@ -210,7 +211,7 @@ public class Eclipse
 	public static Object calculateValue( Expression e )
 	{
 		LOG.fine( "calculateValue enter " + e );
-		LOG.fine( "e type " + e.getClass().getName() );
+		LOG.fine( "expression type " + e.getClass().getName() );
 		Object retVal = null;
 		if( e instanceof Literal )
 		{
@@ -243,8 +244,11 @@ public class Eclipse
 		{
 			LOG.fine( "ClassLiteralAccess, FQN " + Eclipse.toQualifiedName( ( (ClassLiteralAccess) e ).type.getTypeName() ) );
 			ClassLiteralAccess cla = (ClassLiteralAccess)e;
-			LOG.fine("cla type " + cla.type.getTypeName() );
-			retVal = cla /*new ClassLiteral( Eclipse.toQualifiedName( ( (ClassLiteralAccess) e ).type.getTypeName() ) )*/;
+			LOG.fine("cla type typeName " + Eclipse.toQualifiedName( cla.type.getTypeName() ) );
+			LOG.fine("cla type className " + cla.type.getClass().getName() );
+			SingleTypeReference str = (SingleTypeReference)cla.type;
+			LOG.fine( "resolved " + (str.resolvedType == null ? "null" : str.resolvedType.isClass() ) );
+			retVal = new ClassLiteral( Eclipse.toQualifiedName( ( (ClassLiteralAccess) e ).type.getTypeName() ) );
 		}
 		else if( e instanceof SingleNameReference )
 		{

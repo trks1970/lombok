@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import lombok.core.AST.Kind;
 import lombok.permit.Permit;
@@ -45,6 +46,8 @@ import lombok.permit.Permit;
  */
 public class AnnotationValues<A extends Annotation>
 {
+	private Logger LOG = LombokLogger.getLogger();
+	
 	private final Class<A> type;
 	private final Map<String, AnnotationValue> values;
 	private final LombokNode<?, ?, ?> ast;
@@ -489,9 +492,11 @@ public class AnnotationValues<A extends Annotation>
 
 		if( expected == Class.class )
 		{
-			String classLit = ( (ClassLiteral) guess ).getClassName();
+			LOG.fine( "expecting class" );
+			LOG.fine( "guess is " + guess.getClass().getName() );
 			if( guess instanceof ClassLiteral )
 			{
+				String classLit = ( (ClassLiteral) guess ).getClassName();
 				try
 				{
 					return Class.forName( toFQ( classLit ) );
