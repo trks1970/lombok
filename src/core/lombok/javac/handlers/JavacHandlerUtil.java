@@ -2272,6 +2272,16 @@ public class JavacHandlerUtil
 		return node;
 	}
 
+	public static JavacNode upToFieldNode( JavacNode node )
+	{
+		if( node == null )
+			throw new NullPointerException( "node" );
+		while( ( node != null ) && !( node.get() instanceof JCVariableDecl ) )
+			node = node.up();
+
+		return node;
+	}
+
 	public static List<JCExpression> cloneTypes( JavacTreeMaker maker, List<JCExpression> in, JCTree source, Context context )
 	{
 		if( in.isEmpty() )

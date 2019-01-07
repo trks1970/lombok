@@ -25,20 +25,6 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.SOURCE) 
-public @interface LombokOneToMany
+public @interface LombokAssociationUtility
 {
-	public static final String ONE_TO_MANY = "javax.persistence.OneToMany";
-	public static final String JOIN_COLUMN = "javax.persistence.JoinColumn";
-	
-	Cascade[] cascade() default {};
-	Fetch fetch() default Fetch.LAZY;
-	String mappedBy() default "";
-	boolean orphanRemoval() default false;
-	Class<?> targetEntity() default void.class;
-	
-	String joinColumn() default "";
-	String referencedColumn() default "";
-	boolean nullable() default true;
-	boolean unique() default false;
-	boolean insertable() default true;
 }

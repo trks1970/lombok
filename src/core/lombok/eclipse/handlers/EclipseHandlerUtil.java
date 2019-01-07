@@ -37,7 +37,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
@@ -46,7 +45,6 @@ import lombok.Getter;
 import lombok.Lombok;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.LombokLogger;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.NullCheckExceptionType;
@@ -127,8 +125,6 @@ import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
  */
 public class EclipseHandlerUtil
 {
-	private static final Logger LOG = LombokLogger.getLogger();
-
 	private EclipseHandlerUtil()
 	{
 		// Prevent instantiation
@@ -1272,7 +1268,6 @@ public class EclipseHandlerUtil
 	 */
 	public static <A extends java.lang.annotation.Annotation> AnnotationValues<A> createAnnotation( Class<A> type, /*final Annotation annotation,*/ final EclipseNode annotationNode )
 	{
-		LOG.fine( ">>> createAnnotation enter, type " + type.getName() );
 		final Annotation annotation = (Annotation) annotationNode.get();
 		Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
 
@@ -1281,7 +1276,6 @@ public class EclipseHandlerUtil
 		if( memberValuePairs != null )
 			for( final MemberValuePair pair : memberValuePairs )
 			{
-				LOG.fine( "processing memberValuePair " + pair );
 				List<String> raws = new ArrayList<String>();
 				List<Object> expressionValues = new ArrayList<Object>();
 				List<Object> guesses = new ArrayList<Object>();
@@ -1428,7 +1422,6 @@ public class EclipseHandlerUtil
 		}
 
 		AnnotationValues<A> aV = new AnnotationValues<A>( type, values, annotationNode );
-		LOG.fine("createAnnotation exit, AnnotationValues " + aV);
 		return aV;
 	}
 

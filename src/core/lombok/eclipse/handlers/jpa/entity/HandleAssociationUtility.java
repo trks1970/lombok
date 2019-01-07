@@ -2,8 +2,6 @@ package lombok.eclipse.handlers.jpa.entity;
 
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -29,24 +27,26 @@ import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil;
 import lombok.eclipse.handlers.SetGeneratedByVisitor;
-import lombok.eclipse.handlers.generators.AnnotationGenerator;
-import lombok.eclipse.handlers.generators.MemberValuePairGenerator;
-import lombok.experimental.jpa.entity.LombokOneToMany;
+import lombok.experimental.jpa.entity.LombokAssociationUtility;
 
 @ProviderFor( EclipseAnnotationHandler.class )
-public class HandleOneToMany extends EclipseAnnotationHandler<LombokOneToMany>
+public class HandleAssociationUtility extends EclipseAnnotationHandler<LombokAssociationUtility>
 {
-	private AnnotationGenerator annotationGen = AnnotationGenerator.instance();
-	private MemberValuePairGenerator mvpGen = MemberValuePairGenerator.instance();
+	//private AnnotationGenerator annotationGen = AnnotationGenerator.instance();
+	//private MemberValuePairGenerator mvpGen = MemberValuePairGenerator.instance();
 		
 	@Override
-	public void handle( AnnotationValues<LombokOneToMany> annotation, Annotation ast, EclipseNode annotationNode )
+	public void handle( AnnotationValues<LombokAssociationUtility> annotation, Annotation ast, EclipseNode annotationNode )
 	{
 		EclipseNode fieldNode = EclipseHandlerUtil.upToFieldNode( annotationNode );
 		FieldDeclaration fieldDecl = (FieldDeclaration) fieldNode.get();
-		LombokOneToMany a = annotation.getInstance();
+		LombokAssociationUtility a = annotation.getInstance();
 
-		addOneToManyAnnotation(fieldDecl, a);
+		addAddMethod( EclipseHandlerUtil.upToTypeNode(annotationNode), annotationNode, fieldDecl, a );
+		addRemoveMethod( EclipseHandlerUtil.upToTypeNode(annotationNode), annotationNode, fieldDecl, a );
+
+		
+		/*addOneToManyAnnotation(fieldDecl, a);
 		
 		if( !a.mappedBy().isEmpty() )
 		{
@@ -58,10 +58,10 @@ public class HandleOneToMany extends EclipseAnnotationHandler<LombokOneToMany>
 		{
 			// unidirectional, add joinColumn annotation
 			addJoinColumn( fieldDecl, a );
-		}
+		}*/
 	}
 
-	private void addRemoveMethod(EclipseNode typeNode, EclipseNode annotationNode, FieldDeclaration fieldDecl, LombokOneToMany a) 
+	private void addRemoveMethod(EclipseNode typeNode, EclipseNode annotationNode, FieldDeclaration fieldDecl, LombokAssociationUtility a) 
 	{
 		TypeDeclaration parent = (TypeDeclaration)typeNode.get();
 		String parameterName = parameterName(fieldDecl);
@@ -113,7 +113,7 @@ public class HandleOneToMany extends EclipseAnnotationHandler<LombokOneToMany>
 		injectMethod(typeNode, method);
 	}
 
-	private void addAddMethod(EclipseNode typeNode, EclipseNode annotationNode, FieldDeclaration fieldDecl, LombokOneToMany a) 
+	private void addAddMethod(EclipseNode typeNode, EclipseNode annotationNode, FieldDeclaration fieldDecl, LombokAssociationUtility a) 
 	{
 		TypeDeclaration parent = (TypeDeclaration)typeNode.get();
 		String parameterName = parameterName(fieldDecl);
@@ -166,7 +166,7 @@ public class HandleOneToMany extends EclipseAnnotationHandler<LombokOneToMany>
 	}
 	
 
-	private void addOneToManyAnnotation( FieldDeclaration fieldDecl, LombokOneToMany a )
+	/*private void addOneToManyAnnotation( FieldDeclaration fieldDecl, LombokOneToMany a )
 	{
 		List<ASTNode> args = mvpGen.addNameReference( "fetch", a.fetch().fetchType(), new ArrayList<ASTNode>() );
 		if( !a.mappedBy().isEmpty() )
@@ -192,9 +192,9 @@ public class HandleOneToMany extends EclipseAnnotationHandler<LombokOneToMany>
 			args = mvpGen.addTypeRefParameter("targetEntity", a.targetEntity().getName(), args );
 		}
 		annotationGen.createAnnotation( fieldDecl, LombokOneToMany.ONE_TO_MANY, args );
-	}
+	}*/
 	
-	private void addJoinColumn( FieldDeclaration fieldDecl, LombokOneToMany a )
+	/*private void addJoinColumn( FieldDeclaration fieldDecl, LombokOneToMany a )
 	{
 		List<ASTNode> args = new ArrayList<ASTNode>();
 		if( !a.joinColumn().isEmpty() )
@@ -218,7 +218,7 @@ public class HandleOneToMany extends EclipseAnnotationHandler<LombokOneToMany>
 			args = mvpGen.addBooleanParameter("unique", a.nullable(), args ); 
 		}
 		annotationGen.createAnnotation( fieldDecl, LombokOneToMany.JOIN_COLUMN, args );
-	}
+	}*/
 
 	private String parameterName( FieldDeclaration fieldDecl )
 	{
