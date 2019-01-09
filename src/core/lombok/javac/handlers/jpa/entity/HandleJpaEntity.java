@@ -121,6 +121,7 @@ public class HandleJpaEntity extends JavacAnnotationHandler<LombokJpaEntity>
 		{
 			annGen.addAnnotation( versionFieldDecl, typeNode, "javax.persistence.Column", parGen.createParameter( typeNode, "name", a.versionColumn() ) );
 		}
+		annGen.addAnnotation( versionFieldDecl, typeNode, "lombok.EqualsAndHashCode.Exclude" );
 		return versionNode;
 	}
 
@@ -136,6 +137,7 @@ public class HandleJpaEntity extends JavacAnnotationHandler<LombokJpaEntity>
 			// add @javax.persistence.Column(name = "<id>")
 			annGen.addAnnotation( fieldDecl, typeNode, "javax.persistence.Column", parGen.createParameter( typeNode, "name", a.idColumn() ) );
 		}
+		annGen.addAnnotation( fieldDecl, typeNode, "lombok.EqualsAndHashCode.Exclude" );
 		if( !a.idSequence().isEmpty() || IDGenerator.SEQUENCE.equals( a.idGeneration() ) )
 		{	
 			String sequenceName = a.idSequence();

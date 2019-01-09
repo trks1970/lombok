@@ -108,6 +108,7 @@ public class HandleJpaEntity extends EclipseAnnotationHandler<LombokJpaEntity>
 			// add @javax.persistence.Column(name = "<version>")
 			annotationGen.createAnnotation( versionFieldDecl, "javax.persistence.Column", mvpGen.createStringParameter( "name", a.versionColumn() ) );
 		}
+		annotationGen.createAnnotation( versionFieldDecl, "lombok.EqualsAndHashCode.Exclude" );
 		return versionNode;
 	}
 
@@ -122,6 +123,7 @@ public class HandleJpaEntity extends EclipseAnnotationHandler<LombokJpaEntity>
 			// add @javax.persistence.Column(name = "<id>")
 			annotationGen.createAnnotation( idFieldDecl, "javax.persistence.Column", mvpGen.createStringParameter( "name", a.idColumn() ) );
 		}
+		annotationGen.createAnnotation( idFieldDecl, "lombok.EqualsAndHashCode.Exclude" );
 		if( !a.idSequence().isEmpty() || IDGenerator.SEQUENCE.equals( a.idGeneration() ) )
 		{	
 			String sequenceName = a.idSequence();

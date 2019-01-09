@@ -2105,7 +2105,6 @@ public class EclipseHandlerUtil
 	 */
 	public static EclipseNode injectField( EclipseNode type, FieldDeclaration field )
 	{
-		field.annotations = addMarker( type, field, field.annotations );
 		TypeDeclaration parent = (TypeDeclaration) type.get();
 
 		if( parent.fields == null )
@@ -2245,13 +2244,6 @@ public class EclipseHandlerUtil
 			anns = addAnnotation( source, anns, EDU_UMD_CS_FINDBUGS_ANNOTATIONS_SUPPRESSFBWARNINGS, mvp );
 		}
 
-		return anns;
-	}
-
-	public static Annotation[] addMarker( EclipseNode node, ASTNode source, Annotation[] originalAnnotationArray )
-	{
-		Annotation[] anns = addAnnotation( source, originalAnnotationArray, Eclipse.fromQualifiedName( "lombok.experimental.jpa.entity.LombokMarker" ),
-				new StringLiteral( ALL, 0, 0, 0 ) );
 		return anns;
 	}
 
