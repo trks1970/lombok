@@ -22,6 +22,7 @@
 package lombok.core;
 
 public class ClassLiteral {
+	public String name;
 	private final String className;
 	
 	public ClassLiteral(String className) {

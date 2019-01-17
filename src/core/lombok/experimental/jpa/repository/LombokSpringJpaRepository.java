@@ -25,6 +25,6 @@ public @interface LombokSpringJpaRepository
 	public String JPA_REPOSITORY = "org.springframework.data.jpa.repository.JpaRepository";
 	public String SPEC_EXECUTOR = "org.springframework.data.jpa.repository.JpaSpecificationExecutor";
 	
-	Class<?> entity();
-	Class<?> pkType() default Long.class;
+	String entity();
+	String pkType() default "Long";
 }

@@ -24,6 +24,7 @@ import lombok.eclipse.handlers.generators.AnnotationGenerator;
 import lombok.eclipse.handlers.generators.FieldGenerator;
 import lombok.eclipse.handlers.generators.MemberValuePairGenerator;
 import lombok.experimental.jpa.entity.IDGenerator;
+import lombok.experimental.jpa.entity.Inheritance;
 import lombok.experimental.jpa.entity.LombokJpaEntity;
 
 @ProviderFor( EclipseAnnotationHandler.class )
@@ -44,6 +45,11 @@ public class HandleJpaEntity extends EclipseAnnotationHandler<LombokJpaEntity>
 		annotationGen.createAnnotation( typeDecl, LombokJpaEntity.ENTITY );
 		
 		LombokJpaEntity a = annotation.getInstance();
+		if( !a.inheritanceType().equals( Inheritance.NONE ) )
+		{
+			List<ASTNode> valueArgs = mvpGen.addNameReference( "strategy", a.inheritanceType().type(), new ArrayList<ASTNode>() );
+			annotationGen.createAnnotation( typeDecl, LombokJpaEntity.INHERITANCE, valueArgs );
+		}
 		// add ID field
 		EclipseNode idNode = addIDField( ast, annotationNode, typeNode, a );		
 		// add field private Integer <version>

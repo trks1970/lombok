@@ -29,8 +29,8 @@ public class HandleSpringJpaRepository extends JavacAnnotationHandler<LombokSpri
 		
 		JCClassDecl typeDecl = (JCClassDecl) typeNode.get();
 		LombokSpringJpaRepository a = annotation.getInstance();
-		String className = a.entity().getName();
-		String pkName = a.pkType().getName();
+		String className = a.entity();
+		String pkName = a.pkType();
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		List<JCExpression> params = List.<JCExpression> nil();
 		params = params.append( maker.Ident( annotationNode.toName( className ) ) );

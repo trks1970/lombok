@@ -26,6 +26,7 @@ import java.lang.annotation.Target;
 public @interface LombokJpaEntity 
 {
 	public static final String ENTITY = "javax.persistence.Entity";
+	public static final String INHERITANCE = "javax.persistence.Inheritance";
 	
 	public static final String AUTO = "javax.persistence.GenerationType.AUTO";
 	public static final String IDENTITY = "javax.persistence.GenerationType.IDENTITY";
@@ -39,6 +40,7 @@ public @interface LombokJpaEntity
 	FieldType idType() default FieldType.LONG;
 	IDGenerator idGeneration() default IDGenerator.AUTO;
 	String idSequence() default "";
+	Inheritance inheritanceType() default Inheritance.NONE;
 	
 	String versionColumn() default "";
 	String versionField() default "version";

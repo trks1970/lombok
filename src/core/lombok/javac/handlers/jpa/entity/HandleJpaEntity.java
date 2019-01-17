@@ -18,6 +18,7 @@ import lombok.javac.handlers.generators.AnnotationParameterGenerator;
 import lombok.AccessLevel;
 import lombok.core.AnnotationValues;
 import lombok.experimental.jpa.entity.IDGenerator;
+import lombok.experimental.jpa.entity.Inheritance;
 import lombok.experimental.jpa.entity.LombokJpaEntity;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
@@ -45,8 +46,15 @@ public class HandleJpaEntity extends JavacAnnotationHandler<LombokJpaEntity>
 		// add @javax.persistence.Entity on type
 		JavacNode typeNode = annotationNode.up();
 		JCClassDecl typeDecl = (JCClassDecl) typeNode.get();
-		annGen.addAnnotation( typeDecl, typeNode, "javax.persistence.Entity" );
-		LombokJpaEntity a = annotation.getInstance();
+		annGen.addAnnotation( typeDecl, typeNode, LombokJpaEntity.ENTITY );
+		LombokJpaEntity a = annotation.getInstance();		
+		if( !a.inheritanceType().equals( Inheritance.NONE ) )
+		{
+			List<JCExpression> valueArgs = parGen.createTypeRefParameter( typeNode, "strategy", a.idGeneration().generator(), List.<JCExpression> nil() );
+			annGen.addAnnotation( typeDecl, typeNode, LombokJpaEntity.INHERITANCE, valueArgs );
+
+		}
+
 		// add ID field
 		JavacNode idNode = addIDField( ast, annotationNode, typeNode, a );
 		
