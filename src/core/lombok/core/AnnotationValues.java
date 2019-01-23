@@ -26,19 +26,11 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
-
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 
 import lombok.core.AST.Kind;
 import lombok.permit.Permit;
@@ -49,8 +41,6 @@ import lombok.permit.Permit;
  * @param A The annotation that this class represents, such as {@code lombok.Getter}
  */
 public class AnnotationValues<A extends Annotation> {
-	private static final Logger LOG = LombokLogger.getLogger();
-	
 	private final Class<A> type;
 	private final Map<String, AnnotationValue> values;
 	private final LombokNode<?, ?, ?> ast;
@@ -297,7 +287,6 @@ public class AnnotationValues<A extends Annotation> {
 	}
 	
 	private Object guessToType(Object guess, Class<?> expected, AnnotationValue v, int pos) {
-		LOG.fine( "guessToType expected " + expected.getName() + " raws " + v.raws + " valueGuesses " + v.valueGuesses );
 		if (expected == int.class || expected == Integer.class) {
 			if (guess instanceof Integer || guess instanceof Short || guess instanceof Byte) {
 				return ((Number) guess).intValue();
@@ -359,39 +348,12 @@ public class AnnotationValues<A extends Annotation> {
 		}
 		
 		if (expected == Class.class) {
-			String classLit = null;
 			if (guess instanceof ClassLiteral) try {
-				classLit = toFQ( ((ClassLiteral) guess).getClassName() );
-				LOG.fine("classLit " + classLit );
-				LOG.fine( "type Loader " + type.getClassLoader() );
-				LOG.fine( "this Loader " + this.getClass().getClassLoader() );
-				return Class.forName(classLit,false,type.getClassLoader());
+				String classLit = ((ClassLiteral) guess).getClassName();
+				return Class.forName(toFQ(classLit));
 			} catch (ClassNotFoundException e) {
-				LOG.fine( "ClassNotFoundException " + e.getMessage() );
-				for( ClassLoader loader : getLoaders(toFQ(classLit)) )
-				{
-					LOG.fine( "loader " + loader );
-					try
-					{
-						type.getClassLoader().loadClass( classLit );
-						LOG.fine( "loadClass works" );
-					}
-					catch( ClassNotFoundException e1 )
-					{
-						LOG.fine( "loadClass fail" );
-					}
-					try
-					{
-						Class.forName( classLit, false, loader );
-						LOG.fine( "forName works" );
-					}
-					catch( ClassNotFoundException e1 )
-					{
-						LOG.fine( "forName fail" );
-					}
-
-				}
-				throw new AnnotationValueDecodeFail(v, "Can't translate " + guess + " to a class object.", pos);
+				throw new AnnotationValueDecodeFail(v,
+					"Can't translate " + guess + " to a class object.", pos);
 			}
 		}
 		
@@ -404,32 +366,6 @@ public class AnnotationValues<A extends Annotation> {
 		
 		throw new AnnotationValueDecodeFail(v,
 			"Can't translate a " + guess.getClass() + " to the expected " + expected, pos);
-	}
-
-	private List<ClassLoader> getLoaders( String file )
-	{
-		List<ClassLoader> loaders = new ArrayList<ClassLoader>();
-		IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-		IPath path = new Path( file );
-		try
-		{
-			URL fileURL = path.toFile().toURI().toURL();
-			URL[] url = new URL[1];
-			url[0] = fileURL;
-			for(IProject project: projects)
-			{
-				if( project.isOpen() )
-				{
-					loaders.add( project.getClass().getClassLoader() );
-				}
-			}
-
-		}
-		catch( MalformedURLException e )
-		{
-			LOG.fine( e + " " + e.getMessage() );
-		}
-		return loaders;
 	}
 	
 	/**
@@ -605,4 +541,4 @@ public class AnnotationValues<A extends Annotation> {
 		result.append(typeName);
 		return result.toString();
 	}
-}
+} 
