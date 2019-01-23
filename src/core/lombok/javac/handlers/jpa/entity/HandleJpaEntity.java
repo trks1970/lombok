@@ -50,7 +50,7 @@ public class HandleJpaEntity extends JavacAnnotationHandler<LombokJpaEntity>
 		LombokJpaEntity a = annotation.getInstance();		
 		if( !a.inheritanceType().equals( Inheritance.NONE ) )
 		{
-			List<JCExpression> valueArgs = parGen.createTypeRefParameter( typeNode, "strategy", a.idGeneration().generator(), List.<JCExpression> nil() );
+			List<JCExpression> valueArgs = parGen.createTypeRefParameter( typeNode, "strategy", a.inheritanceType().type(), List.<JCExpression> nil() );
 			annGen.addAnnotation( typeDecl, typeNode, LombokJpaEntity.INHERITANCE, valueArgs );
 
 		}
